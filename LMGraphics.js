@@ -221,7 +221,7 @@ function LMGraphics(canvasName, w, h)
 		}
 		this.player_icon_size = Math.floor(this.boxes[0].w * 0.28);
 		this.list_of_icons = new Array();
-		var list_of_icon_names = ['dog','car'];
+		var list_of_icon_names = ['dog','car', 'hat', 'boot'];
 		var i = 0;
 		var th = this;
 		(function tmp_loop()

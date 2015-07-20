@@ -6,7 +6,12 @@
 <body>
 	<div id="primary_box">
 	<canvas id="myCanvas" width="512" height="512"></canvas>
-	<div id="game_injection">game loading...</div>
+	<div id="game_injection">
+		game loading...
+		<div id="game_injection_players">
+			loading player list...
+		</div>
+	</div>
 	</div>
 	<button onclick="test();">refresh</button>
 	<img src="ims/dog.png">
@@ -23,18 +28,14 @@
 
 
 
-function update_player_stats(players)
+function update_player_stats(game)
 {
-	var e = document.getElementById('game_injection');
+	var e = document.getElementById('game_injection_players');
 	var i = 0;
 	var st = '';
-	for(; i < players.length; i++)
+	for(; i < game.players.length; i++)
 	{
-		st += '<div>';
-		st += 'name: ' + players[i].name + '<br/>';
-		st += 'money: $' + players[i].money + '<br/>';
-		st += 'position: ' + GameData.map.list[Math.floor(players[i].position)].name + '<br/>';
-		st += '</div>';
+		st += game.player_stats_injection(i, false);
 	}
 	e.innerHTML = st;
 }
@@ -43,7 +44,7 @@ function update_player_stats(players)
 
 
 
-var game = new LMGame('myCanvas', {'w':512, 'h':512});
+var game = new LMGame('myCanvas', {'w':512, 'h':512}, GameData);
 game.add_player('luke', 'car');
 game.add_player('jasmine', 'car');
 game.add_player('thao');
@@ -54,7 +55,7 @@ game.add_player('thao');
 function renderer()
 {
 	game.render();
-	update_player_stats(game.players);
+	update_player_stats(game);
 	requestAnimationFrame(renderer);
 }
 
@@ -106,7 +107,7 @@ function lmove(p, n)
 
 setTimeout(function(){
 
-lmove(2, 1).lmove(0, 2).lmove(1, 4).lmove(0,12).exec();
+lmove(2, 1).lmove(0, 2).lmove(1, 4).lmove(0,13).exec();
 
 }, 1000);
 

@@ -1,11 +1,12 @@
 
 
-function LMGame(canvasName, sizeIn)
+function LMGame(canvasName, sizeIn, dataIn)
 {
 	this.players = new Array();
 	this.dice = new Dice();
 	this.graphx = new LMGraphics(canvasName, sizeIn.w, sizeIn.h);
 	this.drawDice = false;
+	this.gameData = dataIn;
 	this.add_player = function(nameIn,idol)
 	{ 
 		this.players.push(new LMPlayer(nameIn,idol));
@@ -88,6 +89,28 @@ function LMGame(canvasName, sizeIn)
 	{
 		this.grapx.clear_dice();
 		this.drawDice = false;
+	};
+	
+	this.player_stats_injection = function(index, isSel)
+	{
+		var st = '';
+		if(isSel != undefined && isSel == true)
+		{
+			st += '<div class="player_statSel">';
+		}else
+		{
+			st += '<div class="player_stat">';
+		}
+		st += '<img class="player_statim" src="ims/'+this.players[index].idol+'.png">';
+		st += '<div class="player_statname">'+this.players[index].name+'</div>';
+		st += '<div class="player_statloc">@ '+this.gameData.map.list[Math.floor(this.players[index].position)].name+'</div>';
+		st += '<div class="player_statmoney"> $  '+this.players[index].money+' </div>';
+		st += '<div class="player_stathouse">';
+		st += '<img class="player_stathouseim" src="ims/propertylogo.png"> x M';
+		st += '<img class="player_stathouseim" src="ims/houselogo.png"> x N';
+		st += '<img class="player_stathouseim" src="ims/hotellogo.png"> x T';
+		st += '</div></div>';
+		return st;
 	};
 	
 }

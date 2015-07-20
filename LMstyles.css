@@ -1,14 +1,13 @@
 
 body
 {
-	background-color:blue;
+	background-color:rgb(242, 232,201);
 }
 
 #primary_box
 {
-	background-color:red;
 	height : 512px;
-	width : 912px;
+	width : 982px;
 	padding : 50px;
 }
 
@@ -20,7 +19,86 @@ body
 #game_injection
 {
 	float : right;
-	width : 400px;
+	width : 470px;
 	height : 512px;
-	background-color : yellow;
+	background-color:white;
+}
+
+.player_stat
+{
+	/*background-color:black;*/
+	width:470px;
+	height:60px;
+}
+
+.player_statSel
+{
+	background-color:blue;
+	width:470px;
+	height:80px;
+	padding-top : 10px;
+	
+	
+}
+
+.player_statim
+{
+	width:60px;
+	height:60px;
+}
+
+.player_statname
+{
+	font-family : Arial;
+	font-size : 20px;
+	position : relative;
+	left : 70px;
+	top : -55px;
+	height : 25px;
+	width:110px;
+
+}
+
+.player_statloc
+{
+	font-family : Arial;
+	font-size : 20px;
+	position : relative;
+	left : 70px;
+	top : -52px;
+	height : 25px;
+	width:300px;
+	/*background-color:green;*/
+}
+
+.player_statmoney
+{
+	color:green;
+	font-family : Arial;
+	font-size : 20px;
+	position : relative;
+	left : 185px;
+	top : -105px;
+	height : 25px;
+	width:95px;
+
+}
+
+.player_stathouse
+{
+	color:green;
+	font-family : Arial;
+	font-size : 20px;
+	position : relative;
+	left : 285px;
+	top : -130px;
+	height : 25px;
+	width:180px;
+
+}
+
+.player_stathouseim
+{
+	width : 20px;
+	height : 20px;
 }

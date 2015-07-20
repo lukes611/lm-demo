@@ -1,0 +1,156 @@
+<html>
+<head></head>
+<body>
+	this is luke's monopoly demo.
+	<div style="width:300px;background-color:green;position:absolute;top:0px;right:100px;" id="basic_write">fff</div>
+	<button onclick="test();">refresh</button>
+	<canvas id="myCanvas" width="512" height="512"></canvas>
+	<img src="ims/dog.png">
+	<img src="ims/car.png">
+<script src="LMDice.js"></script>
+<script src="LMGraphics.js"></script>
+<script src="monopolydata.js"></script>
+<script src="LMPlayer.js"></script>
+<script src="LMGame.js"></script>
+<script>
+
+
+
+
+
+
+function update_player_stats(players)
+{
+	var e = document.getElementById('basic_write');
+	var i = 0;
+	var st = '';
+	for(; i < players.length; i++)
+	{
+		st += '<div>';
+		st += 'name: ' + players[i].name + '<br/>';
+		st += 'money: $' + players[i].money + '<br/>';
+		st += 'position: ' + GameData.map.list[Math.floor(players[i].position)].name + '<br/>';
+		st += '</div>';
+	}
+	e.innerHTML = st;
+}
+
+
+
+
+
+var game = new LMGame('myCanvas', {'w':512, 'h':512});
+game.add_player('luke', 'car');
+game.add_player('jasmine', 'car');
+game.add_player('thao');
+
+
+
+
+function renderer()
+{
+	game.render();
+	update_player_stats(game.players);
+	requestAnimationFrame(renderer);
+}
+
+
+setTimeout(function()
+{
+	renderer();
+}, 1000);
+
+
+function lmpo()
+{
+	this.list = new Array();
+	this.lmove = function(p, n)
+	{
+		if(p == undefined || n == undefined)
+		{
+			var mpo = {'p': 0, 'n' : 0, 'stop' : true};
+			this.list.push(mpo);
+		}else
+		{
+			var mpo = {'p': p, 'n' : n, 'stop' : false};
+			this.list.push(mpo);
+		}
+		return this;
+	};
+		
+	this.exec = function()
+	{
+		var th = this;
+		(function tmp_e()
+		{
+			if(th.list.length == 0){ return; }
+			var o = th.list.shift();
+			if(o.stop) { return; }
+			game.move_player(o.p, o.n, tmp_e);
+		})();
+	};
+		
+}
+
+function lmove(p, n)
+{
+	var rv = new lmpo();
+	rv.lmove(p,n);
+	return rv;
+}
+
+setTimeout(function(){
+
+lmove(2, 1).lmove(0, 2).lmove(1, 4).lmove(0,12).exec();
+
+}, 1000);
+
+
+function test()
+{
+}
+
+//move_player1(game.players[0], function c(){});
+
+</script>
+<pre>
+function setup:
+	setup players (names, number of them, figurines)
+	initialize all properties and randomize cards
+function iterate:
+	play(player)
+	player++;
+function play:
+	roll dice : "give dice value"
+	move : "move player, let them know what they landed on / if they pass go and what to increase the money to"
+	if land on property:
+		if owned:
+			pay fee required "let player know"
+		if unowned:
+			wants to buy:
+				take out money
+			else:
+				go for auction:
+					ask every player for a bet
+	if land on go: "give $200"
+	if land on community chest / chance:
+		pick card "give card value"
+		take card effect
+	if invoice tax / super tax:
+		"let them know their fate"
+		take out the money
+	if jail:
+		do nothing
+	if free parking:
+		do nothing
+	if gotojail:
+		"let them know their fate, move them to jail"
+		setup player to be in jail
+		
+	
+	
+</pre>
+	
+
+</body>
+</html>

@@ -1,0 +1,26 @@
+
+body
+{
+	background-color:blue;
+}
+
+#primary_box
+{
+	background-color:red;
+	height : 512px;
+	width : 912px;
+	padding : 50px;
+}
+
+#myCanvas
+{
+	
+}
+
+#game_injection
+{
+	float : right;
+	width : 400px;
+	height : 512px;
+	background-color : yellow;
+}

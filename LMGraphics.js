@@ -192,6 +192,8 @@ function LMGraphics(canvasName, w, h, gameData)
 		};
 	};
 	
+	
+	
 	this.init = function()
 	{
 		var aw = Math.floor(0.9 * this.h);
@@ -205,6 +207,7 @@ function LMGraphics(canvasName, w, h, gameData)
 		this.bottom_corner = {'x' : this.box.x, 'y' : this.box.y + this.box.height};
 		
 		this.boxes = new Array(39);
+		this.sub_boxes = new Array();
 		var wh1 = aw * 0.13;
 		var wh2 = (aw-(wh1*2))/9;
 		this.boxes[0] = {'x':this.bottom_corner.x, 'y':Math.floor(this.bottom_corner.y-wh1), 'w':Math.floor(wh1),'h':Math.floor(wh1), 't':0};
@@ -212,13 +215,27 @@ function LMGraphics(canvasName, w, h, gameData)
 		this.boxes[20] = {'x':this.box.x+Math.floor(this.box.width-wh1), 'y':this.box.y, 'w':Math.floor(wh1),'h':Math.floor(wh1),'t':0};
 		this.boxes[30] = {'x':this.boxes[20].x, 'y':Math.floor(this.box.y+(this.box.height-wh1)), 'w':Math.floor(wh1),'h':Math.floor(wh1),'t':0};
 		var i = 0;
+		
+		var miniBoxSize = {'w' : Math.floor(wh1 * 0.5), 'h' : Math.floor(wh2 * 0.2), 'ft' : {}};
+		miniBoxSize.ft.x = Math.floor(wh1 * 0.1);
+		miniBoxSize.ft.y = Math.floor(wh2 * 0.05);
+		
 		for(i = 1; i <= 9; i++)
 		{
 			this.boxes[i] = {'x':this.boxes[0].x, 'y':Math.floor(this.boxes[0].y-wh2*i), 'w':Math.floor(wh1),'h':Math.floor(wh2), 't':0};
 			this.boxes[10+i] = {'x':Math.floor(this.boxes[10].x+wh1+(wh2*(i-1))), 'y':this.boxes[10].y, 'w':Math.floor(wh2),'h':Math.floor(wh1),'t':1};
 			this.boxes[20+i] = {'x':this.boxes[20].x,'y':Math.floor(this.boxes[20].y+(wh1)+(wh2*(i-1))),'w':Math.floor(wh1),'h':Math.floor(wh2),'t':0};
 			this.boxes[30+i] = {'x':Math.floor(this.boxes[30].x-(wh2*i)), 'y':this.boxes[30].y, 'w':Math.floor(wh2), 'h':Math.floor(wh1),'t':1};
-			
+			if(this.gameData.map.list[i].type == 0)
+			{
+				var prop_ind = this.gameData.prop_index_from_pos(i);
+				var prop1 = this.gameData.properties.list[prop_ind];
+				this.sub_boxes.push({'x' : this.boxes[i].x + (wh1) - (miniBoxSize.ft.x + miniBoxSize.h),
+				'y' : this.boxes[i].y + (miniBoxSize.ft.x), 'w' : miniBoxSize.h, 'h' : miniBoxSize.w, 'r' : prop1.r, 'g' : prop1.g, 'b' : prop1.b});
+				
+				this.sub_boxes.push({'x' : this.boxes[10+i].x + miniBoxSize.ft.x,
+				'y' : (this.boxes[10+i].y + wh1) - (miniBoxSize.ft.y + miniBoxSize.h), 'w' : miniBoxSize.w, 'h' : miniBoxSize.h, 'r' : prop1.r, 'g' : prop1.g, 'b' : prop1.b});
+			}
 		}
 		this.player_icon_size = Math.floor(this.boxes[0].w * 0.28);
 		this.list_of_icons = new Array();
@@ -266,6 +283,12 @@ function LMGraphics(canvasName, w, h, gameData)
 		var i = 0;
 		for(; i < 40; i++){ if(this.boxes[i] == undefined){ continue;}
 		this.drawRect(this.boxes[i].x, this.boxes[i].y, this.boxes[i].w, this.boxes[i].h, 'black');}
+		
+		for(i = 0; i < this.sub_boxes.length; i++)
+		{
+			var colorIn = 'rgb(' + this.sub_boxes[i].r + ',' + this.sub_boxes[i].g + ',' + this.sub_boxes[i].b + ')';
+			this.drawRect(this.sub_boxes[i].x, this.sub_boxes[i].y, this.sub_boxes[i].w, this.sub_boxes[i].h, colorIn);
+		}
 	};
 	
 	this.get_loc = function(loc, pindex)

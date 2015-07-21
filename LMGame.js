@@ -2,11 +2,30 @@
 
 function LMGame(canvasName, sizeIn, dataIn)
 {
+	this.gameData = dataIn;
+	
+	this.gameData.prop_index_from_pos = function(pos)
+	{
+		if(this.map.list[pos].type == 0)
+		{
+			var val = this.map.list[pos].value;
+			var i = 0;
+			for(; i < this.properties.list.length; i++)
+			{
+				if(this.properties.list[i].id == val)
+				{
+					return i;
+				}
+			}
+		}
+		return -1;
+	};
+	
 	this.players = new Array();
 	this.dice = new Dice();
-	this.graphx = new LMGraphics(canvasName, sizeIn.w, sizeIn.h, dataIn);
+	this.graphx = new LMGraphics(canvasName, sizeIn.w, sizeIn.h, this.gameData);
 	this.drawDice = false;
-	this.gameData = dataIn;
+	
 	this.playersTurn = 0;
 	this.add_player = function(nameIn,idol)
 	{ 

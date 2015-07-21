@@ -31,21 +31,21 @@
 
 
 
-function update_player_stats(game)
+
+window.onload = function()
 {
-	var e = document.getElementById('game_injection_players');
-	e.innerHTML = game.get_player_stats_injection();
-}
+	console.log('hi');
+	function update_player_stats(game)
+	{
+		var e = document.getElementById('game_injection_players');
+		e.innerHTML = game.get_player_stats_injection();
+	}
 
-
-
-
-
-var game = new LMGame('myCanvas', {'w':512, 'h':512}, GameData);
-game.add_player('luke', 'car');
-game.add_player('jasmine', 'boot');
-game.add_player('thao', 'dog');
-game.add_player('michael', 'hat');
+	var game = new LMGame('myCanvas', {'w':512, 'h':512}, GameData);
+	game.add_player('luke', 'car');
+	game.add_player('jasmine', 'boot');
+	game.add_player('thao', 'dog');
+	game.add_player('michael', 'hat');
 
 
 
@@ -109,6 +109,8 @@ setTimeout(function(){
 lmove(2, 1).lmove(0, 2).lmove(3, 2).lmove(1, 4).lmove(3, 5).lmove(0,5).exec();
 
 }, 1000);
+
+};
 
 
 function test()

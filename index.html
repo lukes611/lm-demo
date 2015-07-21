@@ -31,13 +31,7 @@
 function update_player_stats(game)
 {
 	var e = document.getElementById('game_injection_players');
-	var i = 0;
-	var st = '';
-	for(; i < game.players.length; i++)
-	{
-		st += game.player_stats_injection(i, false);
-	}
-	e.innerHTML = st;
+	e.innerHTML = game.get_player_stats_injection();
 }
 
 
@@ -48,6 +42,7 @@ var game = new LMGame('myCanvas', {'w':512, 'h':512}, GameData);
 game.add_player('luke', 'car');
 game.add_player('jasmine', 'boot');
 game.add_player('thao', 'dog');
+game.add_player('michael', 'hat');
 
 
 
@@ -92,6 +87,7 @@ function lmpo()
 			if(th.list.length == 0){ return; }
 			var o = th.list.shift();
 			if(o.stop) { return; }
+			game.playersTurn = o.p;
 			game.move_player(o.p, o.n, tmp_e);
 		})();
 	};
@@ -107,7 +103,7 @@ function lmove(p, n)
 
 setTimeout(function(){
 
-lmove(2, 1).lmove(0, 2).lmove(1, 4).lmove(0,13).exec();
+lmove(2, 1).lmove(0, 2).lmove(3, 2).lmove(1, 4).lmove(3, 5).lmove(0,5).exec();
 
 }, 1000);
 

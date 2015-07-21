@@ -7,6 +7,7 @@ function LMGame(canvasName, sizeIn, dataIn)
 	this.graphx = new LMGraphics(canvasName, sizeIn.w, sizeIn.h);
 	this.drawDice = false;
 	this.gameData = dataIn;
+	this.playersTurn = 0;
 	this.add_player = function(nameIn,idol)
 	{ 
 		this.players.push(new LMPlayer(nameIn,idol));
@@ -110,6 +111,18 @@ function LMGame(canvasName, sizeIn, dataIn)
 		st += '<img class="player_stathouseim" src="ims/houselogo.png"> x N';
 		st += '<img class="player_stathouseim" src="ims/hotellogo.png"> x T';
 		st += '</div></div>';
+		return st;
+	};
+	
+	this.get_player_stats_injection = function()
+	{
+		var st = '';
+		var i = 0;
+		for(; i < this.players.length; i++)
+		{
+			if(this.playersTurn == i) { st += this.player_stats_injection(i, true); }
+			else { st += this.player_stats_injection(i, false); }
+		}
 		return st;
 	};
 	

@@ -216,9 +216,9 @@ function LMGraphics(canvasName, w, h, gameData)
 		this.boxes[30] = {'x':this.boxes[20].x, 'y':Math.floor(this.box.y+(this.box.height-wh1)), 'w':Math.floor(wh1),'h':Math.floor(wh1),'t':0};
 		var i = 0;
 		
-		var miniBoxSize = {'w' : Math.floor(wh1 * 0.5), 'h' : Math.floor(wh2 * 0.2), 'ft' : {}};
-		miniBoxSize.ft.x = Math.floor(wh1 * 0.1);
-		miniBoxSize.ft.y = Math.floor(wh2 * 0.05);
+		var miniBoxSize = {'w' : Math.floor(wh2 * 0.8), 'h' : Math.floor(wh1 * 0.13), 'ft' : {}};
+		miniBoxSize.ft.x = Math.floor(wh2 * 0.1);
+		miniBoxSize.ft.y = Math.floor(wh1 * 0.08);
 		
 		for(i = 1; i <= 9; i++)
 		{
@@ -228,13 +228,40 @@ function LMGraphics(canvasName, w, h, gameData)
 			this.boxes[30+i] = {'x':Math.floor(this.boxes[30].x-(wh2*i)), 'y':this.boxes[30].y, 'w':Math.floor(wh2), 'h':Math.floor(wh1),'t':1};
 			if(this.gameData.map.list[i].type == 0)
 			{
-				var prop_ind = this.gameData.prop_index_from_pos(i);
-				var prop1 = this.gameData.properties.list[prop_ind];
-				this.sub_boxes.push({'x' : this.boxes[i].x + (wh1) - (miniBoxSize.ft.x + miniBoxSize.h),
-				'y' : this.boxes[i].y + (miniBoxSize.ft.x), 'w' : miniBoxSize.h, 'h' : miniBoxSize.w, 'r' : prop1.r, 'g' : prop1.g, 'b' : prop1.b});
+				var prop1 = this.gameData.properties.list[this.gameData.prop_index_from_pos(i)];
 				
-				this.sub_boxes.push({'x' : this.boxes[10+i].x + miniBoxSize.ft.x,
-				'y' : (this.boxes[10+i].y + wh1) - (miniBoxSize.ft.y + miniBoxSize.h), 'w' : miniBoxSize.w, 'h' : miniBoxSize.h, 'r' : prop1.r, 'g' : prop1.g, 'b' : prop1.b});
+				if(prop1.type == 0)
+				{
+					this.sub_boxes.push({'x' : this.boxes[i].x + (wh1) - (miniBoxSize.ft.y + miniBoxSize.h),
+					'y' : this.boxes[i].y + (miniBoxSize.ft.x), 'w' : miniBoxSize.h, 'h' : miniBoxSize.w, 'r' : prop1.r, 'g' : prop1.g, 'b' : prop1.b});
+				}
+			}
+			if(this.gameData.map.list[i+10].type == 0)
+			{
+				var prop2 = this.gameData.properties.list[this.gameData.prop_index_from_pos(i+10)];
+				if(prop2.type == 0)
+				{
+					this.sub_boxes.push({'x' : this.boxes[10+i].x + miniBoxSize.ft.x,
+					'y' : (this.boxes[10+i].y + wh1) - (miniBoxSize.ft.y + miniBoxSize.h), 'w' : miniBoxSize.w, 'h' : miniBoxSize.h, 'r' : prop2.r, 'g' : prop2.g, 'b' : prop2.b});
+				}
+			}
+			if(this.gameData.map.list[i+20].type == 0)
+			{
+				var prop3 = this.gameData.properties.list[this.gameData.prop_index_from_pos(i+20)];
+				if(prop3.type == 0)
+				{
+					this.sub_boxes.push({'x' : this.boxes[i+20].x + miniBoxSize.ft.y,
+					'y' : this.boxes[i+20].y + (miniBoxSize.ft.x), 'w' : miniBoxSize.h, 'h' : miniBoxSize.w, 'r' : prop3.r, 'g' : prop3.g, 'b' : prop3.b});
+				}
+			}
+			if(this.gameData.map.list[i+30].type == 0)
+			{
+				var prop4 = this.gameData.properties.list[this.gameData.prop_index_from_pos(i+30)];
+				if(prop4.type == 0)
+				{
+					this.sub_boxes.push({'x' : this.boxes[30+i].x + miniBoxSize.ft.x,
+					'y' : this.boxes[30+i].y + miniBoxSize.ft.y, 'w' : miniBoxSize.w, 'h' : miniBoxSize.h, 'r' : prop4.r, 'g' : prop4.g, 'b' : prop4.b});
+				}
 			}
 		}
 		this.player_icon_size = Math.floor(this.boxes[0].w * 0.28);

@@ -1,7 +1,7 @@
 
 
 
-function LMGraphics(canvasName, w, h)
+function LMGraphics(canvasName, w, h, gameData)
 {
 	this.canvasName = canvasName;
 	this.canvas = document.getElementById(this.canvasName);
@@ -9,6 +9,7 @@ function LMGraphics(canvasName, w, h)
 	this.w = w;
 	this.h = h;
 	this.backgroundColor = 'white';
+	this.gameData = gameData;
 	
 	this.clear = function()
 	{

@@ -4,7 +4,7 @@ function LMGame(canvasName, sizeIn, dataIn)
 {
 	this.players = new Array();
 	this.dice = new Dice();
-	this.graphx = new LMGraphics(canvasName, sizeIn.w, sizeIn.h);
+	this.graphx = new LMGraphics(canvasName, sizeIn.w, sizeIn.h, dataIn);
 	this.drawDice = false;
 	this.gameData = dataIn;
 	this.playersTurn = 0;

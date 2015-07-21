@@ -24,6 +24,19 @@ body
 	background-color:white;
 }
 
+#game_player_options
+{
+	width : 470px;
+	height : 200px;
+	background-color : orange;
+}
+
+#game_player_options_name
+{
+	font-family : Arial;
+	font-size : 30px;
+}
+
 .player_stat
 {
 	/*background-color:black;*/

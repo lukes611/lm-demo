@@ -3,7 +3,7 @@
 function LMGame(canvasName, sizeIn, dataIn)
 {
 	this.gameData = dataIn;
-	
+
 	this.gameData.prop_index_from_pos = function(pos)
 	{
 		if(this.map.list[pos].type == 0)
@@ -20,22 +20,23 @@ function LMGame(canvasName, sizeIn, dataIn)
 		}
 		return -1;
 	};
-	
+
 	this.players = new Array();
 	this.dice = new Dice();
 	this.graphx = new LMGraphics(canvasName, sizeIn.w, sizeIn.h, this.gameData);
 	this.drawDice = false;
-	
+
 	this.playersTurn = 0;
+	
 	this.add_player = function(nameIn,idol)
-	{ 
+	{
 		this.players.push(new LMPlayer(nameIn,idol));
 	};
-	
+
 	this.render = function()
 	{
 		this.graphx.clear_vsmall();
-		this.graphx.drawBG(); 
+		this.graphx.drawBG();
 		if(this.drawDice)
 		{
 			this.graphx.drawDice(1, this.dice.val1);
@@ -47,7 +48,7 @@ function LMGame(canvasName, sizeIn, dataIn)
 			this.graphx.draw_playerf(this.players[i].position, this.players[i].idol, i);
 		}
 	};
-	
+
 	this.move_player_single = function(index, cb, speed)
 	{
 		var ntimes = 10;
@@ -56,7 +57,7 @@ function LMGame(canvasName, sizeIn, dataIn)
 		var original = this.players[index].position;
 		var th = this;
 		var ftmp = function()
-		{	
+		{
 			th.players[index].position += incer;
 			if(Math.abs((th.players[index].position-original) - 1) < incer)
 			{
@@ -69,7 +70,7 @@ function LMGame(canvasName, sizeIn, dataIn)
 		};
 		setTimeout(ftmp, nseconds / ntimes);
 	};
-	
+
 	this.move_player = function(player_index,xtimes, cb)
 	{
 		var i = 0;
@@ -87,7 +88,7 @@ function LMGame(canvasName, sizeIn, dataIn)
 			}
 		});
 	};
-	
+
 	this.roll_animation = function(cb)
 	{
 		var th = this;
@@ -102,15 +103,15 @@ function LMGame(canvasName, sizeIn, dataIn)
 			else { if(cb != undefined) { cb(); } }
 		})();
 	};
-	
-	
-	
+
+
+
 	this.clear_dice = function()
 	{
 		this.grapx.clear_dice();
 		this.drawDice = false;
 	};
-	
+
 	this.player_stats_injection = function(index, isSel)
 	{
 		var st = '';
@@ -132,7 +133,7 @@ function LMGame(canvasName, sizeIn, dataIn)
 		st += '</div></div>';
 		return st;
 	};
-	
+
 	this.get_player_stats_injection = function()
 	{
 		var st = '';
@@ -144,5 +145,5 @@ function LMGame(canvasName, sizeIn, dataIn)
 		}
 		return st;
 	};
-	
+
 }

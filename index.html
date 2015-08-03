@@ -1,6 +1,6 @@
 <html>
 <head>
-  <title>luke's monopoly game</title> 
+  <title>luke's monopoly game</title>
   <link rel="stylesheet" type="text/css" href="LMstyles.css">
 </head>
 <body>
@@ -8,8 +8,19 @@
 	<canvas id="myCanvas" width="512" height="512"></canvas>
 	<div id="game_injection">
 		<div id="game_player_options">
-			<div id="game_player_options_name">Jasmine's Turn</div>
-			
+			<div id="game_player_options_name">Jasmifdgfne's Turn</div>
+      <div id="game_player_options_list">
+        <div id="game_player_options_list_description" >
+          this is a description of what is going on
+        </div>
+        <div id="game_actual_options_list">
+          <button class="game_player_option_button"> roll </button>
+          <button class="game_player_option_button"> Option 2 </button>
+          <button class="game_player_option_button"> Option 3 </button>
+          <button class="game_player_option_button"> Option 4 </button>
+        </div>
+      </div>
+
 		</div>
 		<div id="game_injection_players">
 			loading player list...
@@ -81,7 +92,7 @@ function lmpo()
 		}
 		return this;
 	};
-		
+
 	this.exec = function()
 	{
 		var th = this;
@@ -94,7 +105,7 @@ function lmpo()
 			game.move_player(o.p, o.n, tmp_e);
 		})();
 	};
-		
+
 }
 
 function lmove(p, n)
@@ -153,11 +164,11 @@ function play:
 	if gotojail:
 		"let them know their fate, move them to jail"
 		setup player to be in jail
-		
-	
-	
+
+
+
 </pre>
-	
+
 
 </body>
 </html>

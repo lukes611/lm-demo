@@ -1,48 +1,101 @@
-<html>
+<!DOCTYPE html>
+<html lang="en" >
 <head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <!-- Latest compiled JavaScript -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
   <title>luke's monopoly game</title>
   <link rel="stylesheet" type="text/css" href="LMstyles.css">
 </head>
 <body>
-	<div id="primary_box">
-	<canvas id="myCanvas" width="512" height="512"></canvas>
-	<div id="game_injection">
-		<div id="game_player_options">
-			<div id="game_player_options_name">Jasmifdgfne's Turn</div>
-      <div id="game_player_options_list">
-        <div id="game_player_options_list_description" >
-          this is a description of what is going on
-        </div>
-        <div id="game_actual_options_list">
-          <button class="game_player_option_button"> roll </button>
-          <button class="game_player_option_button"> Option 2 </button>
-          <button class="game_player_option_button"> Option 3 </button>
-          <button class="game_player_option_button"> Option 4 </button>
-        </div>
-      </div>
 
-		</div>
-		<div id="game_injection_players">
-			loading player list...
-		</div>
-	</div>
-	</div>
-	<button onclick="test();">refresh</button>
-	<img src="ims/dog.png">
-	<img src="ims/car.png">
+  <!-- the main box container -->
+  <div class="container-fluid" >
+  <!-- top row: -->
+    <div class="row">
+      <div class="col-md-4" >
+	       <canvas id="myCanvas" width="512" height="512"></canvas>
+	    </div>
+      <div class="col-md-4" >
+        <div id="game_injection">
+      		<div id="game_player_options">
+      			<h1 id="game_player_options_name">Jasmifdgfne's Turn</h1>
+            <div id="game_player_options_list">
+              <h3 id="game_player_options_list_description" >
+                this is a description of what is going on
+              </h3>
+                <button type="button" class="btn btn-success"> roll </button>
+                <button type="button" class="btn btn-success"> Option 2 </button>
+                <button type="button" class="btn btn-success"> Option 3 </button>
+                <button type="button" class="btn btn-success"> Option 4 </button>
+            </div>
+            <br/>
+      		</div>
+      		<div id="game_injection_players">
+      			loading player list...
+      		</div>
+      	</div>
+      </div>
+      <div class="col-md-4">
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+      </div>
+    </div>
+<!-- end main box container -->
+</div>
+
+<pre>
+function setup:
+	setup players (names, number of them, figurines)
+	initialize all properties and randomize cards
+function iterate:
+	play(player)
+	player++;
+function play:
+	roll dice : "give dice value"
+	move : "move player, let them know what they landed on / if they pass go and what to increase the money to"
+	if land on property:
+		if owned:
+			pay fee required "let player know"
+		if unowned:
+			wants to buy:
+				take out money
+			else:
+				go for auction:
+					ask every player for a bet
+	if land on go: "give $200"
+	if land on community chest / chance:
+		pick card "give card value"
+		take card effect
+	if invoice tax / super tax:
+		"let them know their fate"
+		take out the money
+	if jail:
+		do nothing
+	if free parking:
+		do nothing
+	if gotojail:
+		"let them know their fate, move them to jail"
+		setup player to be in jail
+
+
+
+</pre>
+<!-- script section -->
+<button onclick="test();">refresh</button>
+<img src="ims/dog.png">
+<img src="ims/car.png">
 <script src="LMDice.js"></script>
 <script src="LMGraphics.js"></script>
 <script src="monopolydata.js"></script>
 <script src="LMPlayer.js"></script>
 <script src="LMGame.js"></script>
+
 <script>
-
-
-
-
-
-
-
 window.onload = function()
 {
 	console.log('hi');
@@ -123,52 +176,7 @@ lmove(2, 3).lmove(0, 2).lmove(3, 2).lmove(1, 4).lmove(3, 5).lmove(0,5).exec();
 
 };
 
-
-function test()
-{
-}
-
-//move_player1(game.players[0], function c(){});
-
 </script>
-<pre>
-function setup:
-	setup players (names, number of them, figurines)
-	initialize all properties and randomize cards
-function iterate:
-	play(player)
-	player++;
-function play:
-	roll dice : "give dice value"
-	move : "move player, let them know what they landed on / if they pass go and what to increase the money to"
-	if land on property:
-		if owned:
-			pay fee required "let player know"
-		if unowned:
-			wants to buy:
-				take out money
-			else:
-				go for auction:
-					ask every player for a bet
-	if land on go: "give $200"
-	if land on community chest / chance:
-		pick card "give card value"
-		take card effect
-	if invoice tax / super tax:
-		"let them know their fate"
-		take out the money
-	if jail:
-		do nothing
-	if free parking:
-		do nothing
-	if gotojail:
-		"let them know their fate, move them to jail"
-		setup player to be in jail
-
-
-
-</pre>
-
 
 </body>
 </html>

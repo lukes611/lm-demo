@@ -27,7 +27,7 @@ function LMGame(canvasName, sizeIn, dataIn)
 	this.drawDice = false;
 
 	this.playersTurn = 0;
-	
+
 	this.add_player = function(nameIn,idol)
 	{
 		this.players.push(new LMPlayer(nameIn,idol));
@@ -117,20 +117,26 @@ function LMGame(canvasName, sizeIn, dataIn)
 		var st = '';
 		if(isSel != undefined && isSel == true)
 		{
-			st += '<div class="player_statSel">';
+			st += '<div class="container-fluid player_statSel">';
 		}else
 		{
-			st += '<div class="player_stat">';
+			st += '<div class="container-fluid">';
 		}
-		st += '<img class="player_statim" src="ims/'+this.players[index].idol+'.png">';
-		st += '<div class="player_statname">'+this.players[index].name+'</div>';
-		st += '<div class="player_statloc">@ '+this.gameData.map.list[Math.floor(this.players[index].position)].name+'</div>';
-		st += '<div class="player_statmoney"> $  '+this.players[index].money+' </div>';
-		st += '<div class="player_stathouse">';
-		st += '<img class="player_stathouseim" src="ims/propertylogo.png"> x M';
-		st += '<img class="player_stathouseim" src="ims/houselogo.png"> x N';
-		st += '<img class="player_stathouseim" src="ims/hotellogo.png"> x T';
-		st += '</div></div>';
+		//first row:
+		st += '<div class="row">';
+		st += '<div class="col-xs-2"><img class="BootStrapFitIm" src="ims/'+this.players[index].idol+'.png"></div>';
+		st += '<div class="col-xs-3">'+this.players[index].name+'</div>';
+		st += '<div class="col-xs-7">@ '+this.gameData.map.list[Math.floor(this.players[index].position)].name+'</div>';
+		st += '</div>';
+
+		//second row:
+		st += '<div class="row">'
+		st += '<div class="col-xs-6"> $  '+this.players[index].money+' </div>';
+		st += '<div class="col-xs-2"><img class="BootStrapFitIm" src="ims/propertylogo.png"> x M</div>';
+		st += '<div class="col-xs-2"><img class="BootStrapFitIm" src="ims/houselogo.png"> x N</div>';
+		st += '<div class="col-xs-2"><img class="BootStrapFitIm" src="ims/hotellogo.png"> x T</div>';
+		st += '</div>';
+		st += '</div>';
 		return st;
 	};
 

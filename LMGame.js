@@ -48,12 +48,22 @@ function LMGame(canvasName, sizeIn, dataIn)
 							var dice_amount = th.dice.total();
 							th.move_player(th.playersTurn, dice_amount, function()
 							{
-								th.nextPlayer();
-								th.state = 0;
+								th.state = 2;
 								th.play(undefined, cb);
 							})
 					});
-			}
+			}break;
+			//case 2: left player know what they got, give options
+			case 2:
+			{
+				if(this.gameData.map.list[this.players[this.playersTurn].position].type == 0) //is property they can buy
+				{
+					this.state = 3;
+					cb({'desc':'you landed on: ' + this.gameData.map.list[this.players[this.playersTurn].position].name,
+					'list':[{'name':'buy', 'id':0}, {'name': 'auction', 'id' : 1}]});
+				}else{this.nextPlayer();this.state=0;this.play(undefined, cb);}
+			} break;
+			
 
 		}
 

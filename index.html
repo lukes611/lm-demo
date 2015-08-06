@@ -110,7 +110,7 @@ function gloop(input)
     var st = '';
     var i = 0;
     for(; i < options.list.length; i++)
-      st += '<button type="button" class="btn btn-success" onclick="gloop('+options.list[i].id+');"> '+options.list[i].name+' </button>';
+      st += '<button type="button" class="luke-options-buttons btn btn-success" onclick="gloop('+options.list[i].id+');"> '+options.list[i].name+' </button>';
     $('#game_player_options_list_content').html(st);
   });
 }

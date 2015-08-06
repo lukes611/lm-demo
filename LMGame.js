@@ -22,7 +22,7 @@ function LMGame(canvasName, sizeIn, dataIn)
 	};
 
 	this.players = new Array();
-	this.dice = new Dice();
+	this.dice = new Diced();
 	this.graphx = new LMGraphics(canvasName, sizeIn.w, sizeIn.h, this.gameData);
 	this.drawDice = false;
 

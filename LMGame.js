@@ -132,7 +132,7 @@ function LMGame(canvasName, sizeIn, dataIn)
 	{
 		var th = this;
 		this.drawDice = true;
-		var max_times = 50;
+		var max_times = 12;
 		var i = 0;
 		(function tmp_dice()
 		{

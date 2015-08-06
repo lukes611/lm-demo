@@ -78,6 +78,7 @@ function LMGame(canvasName, sizeIn, dataIn)
 		this.graphx.drawBG();
 		if(this.drawDice)
 		{
+			this.graphx.clear_dice();
 			this.graphx.drawDice(1, this.dice.val1);
 			this.graphx.drawDice(0, this.dice.val2);
 		}

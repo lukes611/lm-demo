@@ -51,12 +51,11 @@ function Diced()
 	this.index = 0;
 	this.roll = function()
 	{
-		this.val1 = this.vset[this.index];
-		this.val2 = 0;
-		this.index++;
-		this.index %= this.vset.length;
-		this.val1 += 1;
-		this.val2 += 1;
+		this.val1 = 2;
+		this.val2 = 1;
+
+		//this.val1 += 1;
+		//this.val2 += 1;
 		this.num_doubles = (this.doubles())? this.num_doubles+1 : 0;
 	};
 
@@ -70,7 +69,10 @@ function Diced()
 
 	this.total = function()
 	{
-		return this.val1 + this.val2;
+		var rv = this.vset[this.index];
+		this.index++;
+		this.index %= this.vset.length;
+		return rv;
 	};
 	this.doubles = function()
 	{

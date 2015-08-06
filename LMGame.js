@@ -27,6 +27,45 @@ function LMGame(canvasName, sizeIn, dataIn)
 	this.drawDice = false;
 
 	this.playersTurn = 0;
+	this.state = 0; //beginning state
+
+	this.play = function(optionIn, cb)
+	{
+		switch(this.state)
+		{
+			case 0:
+			{
+				this.state = 1;
+				cb({'list':[{'name': 'roll', 'id' : 0}], 'desc' : 'roll the dice...'});
+				return;
+			} break;
+			case 1:
+			{
+					var th = this;
+					this.roll_animation(function()
+					{
+							th.dice.roll();
+							var dice_amount = th.dice.total();
+							th.move_player(th.playersTurn, dice_amount, function()
+							{
+								th.nextPlayer();
+								th.state = 0;
+								th.play(undefined, cb);
+							})
+					});
+			}
+
+		}
+
+
+	};
+
+	this.nextPlayer = function(){ this.playersTurn = (this.playersTurn+1) % this.players.length; };
+
+	this.current_player = function()
+	{
+		return this.players[this.playersTurn];
+	};
 
 	this.add_player = function(nameIn,idol)
 	{

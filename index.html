@@ -21,15 +21,14 @@
       <div class="col-md-4" >
         <div id="game_injection">
       		<div id="game_player_options">
-      			<h1 id="game_player_options_name">Jasmifdgfne's Turn</h1>
+      			<h1 id="game_player_options_name">Loading...</h1>
             <div id="game_player_options_list">
               <h3 id="game_player_options_list_description" >
-                this is a description of what is going on
+                Loading to be cont...
               </h3>
-                <button type="button" class="btn btn-success"> roll </button>
-                <button type="button" class="btn btn-success"> Option 2 </button>
-                <button type="button" class="btn btn-success"> Option 3 </button>
-                <button type="button" class="btn btn-success"> Option 4 </button>
+                <div id="game_player_options_list_content">
+                  Loading...
+                </div>
             </div>
             <br/>
       		</div>
@@ -96,6 +95,26 @@ function play:
 <script src="LMGame.js"></script>
 
 <script>
+var game = undefined;
+
+function gloop(input)
+{
+  $('#game_player_options_list_content').html('');
+  $('#game_player_options_list_description').html('');
+  game.play(input, function(options)
+  {
+    $('#game_player_options_name').html(game.current_player().name + '\'s turn');
+
+
+    $('#game_player_options_list_description').html(options.desc);
+    var st = '';
+    var i = 0;
+    for(; i < options.list.length; i++)
+      st += '<button type="button" class="btn btn-success" onclick="gloop('+options.list[i].id+');"> '+options.list[i].name+' </button>';
+    $('#game_player_options_list_content').html(st);
+  });
+}
+
 window.onload = function()
 {
 	console.log('hi');
@@ -105,7 +124,7 @@ window.onload = function()
 		e.innerHTML = game.get_player_stats_injection();
 	}
 
-	var game = new LMGame('myCanvas', {'w':512, 'h':512}, GameData);
+	game = new LMGame('myCanvas', {'w':512, 'h':512}, GameData);
 	game.add_player('luke', 'car');
 	game.add_player('jasmine', 'boot');
 	game.add_player('bob', 'dog');
@@ -168,11 +187,21 @@ function lmove(p, n)
 	return rv;
 }
 
-setTimeout(function(){
+/*setTimeout(function(){
 
 lmove(2, 3).lmove(0, 2).lmove(3, 2).lmove(1, 4).lmove(3, 5).lmove(0,5).exec();
 
 }, 1000);
+*/
+
+
+
+setTimeout(function()
+{
+  gloop();
+
+},1400);
+
 
 };
 

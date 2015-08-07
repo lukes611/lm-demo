@@ -36,7 +36,7 @@ function LMGame(canvasName, sizeIn, dataIn)
 			case 0:
 			{
 				this.state = 1;
-				cb({'list':[{'name': 'roll', 'id' : 0}], 'desc' : 'roll the dice...'});
+				cb({"type":0, "buttonList":[{'name': 'roll', 'id' : 0, "buttonStyle": 1}], "desc" : 'roll the dice...'});
 				return;
 			} break;
 			case 1:
@@ -59,8 +59,8 @@ function LMGame(canvasName, sizeIn, dataIn)
 				if(this.gameData.map.list[this.players[this.playersTurn].position].type == 0) //is property they can buy
 				{
 					this.state = 3;
-					cb({'desc':'you landed on: ' + this.gameData.map.list[this.players[this.playersTurn].position].name,
-					'list':[{'name':'buy', 'id':0}, {'name': 'auction', 'id' : 1}]});
+					cb({"type":0, "desc":'you landed on: ' + this.gameData.map.list[this.players[this.playersTurn].position].name,
+					'buttonList':[{'name':'buy', 'id':0, 'buttonStyle':2}, {'name': 'auction', 'id' : 1, "buttonStyle":5}]});
 				}else{this.nextPlayer();this.state=0;this.play(undefined, cb);}
 			} break;
 			

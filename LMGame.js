@@ -56,20 +56,65 @@ function LMGame(canvasName, sizeIn, dataIn)
 			//case 2: left player know what they got, give options
 			case 2:
 			{
-				if(this.gameData.map.list[this.players[this.playersTurn].position].type == 0) //is property they can buy
+				var player = this.current_player();
+				var location = this.map_data(player.position);
+				if(location.type == 0) //is property they can buy
 				{
+					var property = this.properties_data(location.value);
 					this.state = 3;
-					cb({"type":0, "desc":'you landed on: ' + this.gameData.map.list[this.players[this.playersTurn].position].name,
-					'buttonList':[{'name':'buy', 'id':0, 'buttonStyle':2}, {'name': 'auction', 'id' : 1, "buttonStyle":5}]});
+					cb({"type":0, "desc":'you landed on: ' + location.name,
+					'buttonList':[{'name':'buy ($' + property.price + ')' , 'id':0, 'buttonStyle':2}, {'name': 'auction', 'id' : 1, "buttonStyle":5}]});
 				}else{this.nextPlayer();this.state=0;this.play(undefined, cb);}
 			} break;
+			case 3: //chose to purchase or not
+			{
+				if(optionIn == 0)
+				{
+					var th = this;
+					var player = this.current_player();
+					var location = this.map_data(player.position);
+					var property = this.properties_data(location.value);
+					this.money_change_animation(this.playersTurn, property.price, -1, function()
+					{
+						th.state = 4;
+						th.play(undefined, cb);
+					});
+				}
+				
+			}break;
+			case 4: //end turn...
+			{
+				this.state = 5;
+				cb({"type":0, "buttonList":[{'name': 'end turn', 'id' : 0, "buttonStyle": 1}], "desc" : 'end your turn, or complete another task.'});
+				return;
+			} break;
+			case 5:
+			{
+				if(optionIn == 0)
+				{
+					this.state = 0;
+					this.nextPlayer();
+					this.play(undefined, cb);
+				}
+				
+			} break;			
 			
 
 		}
 
 
 	};
-
+	
+	this.map_data = function(position)
+	{
+		return this.gameData.map.list[position];
+	};
+	
+	this.properties_data = function(id)
+	{
+		return this.gameData.properties.list[id];
+	};
+	
 	this.nextPlayer = function(){ this.playersTurn = (this.playersTurn+1) % this.players.length; };
 
 	this.current_player = function()
@@ -154,7 +199,33 @@ function LMGame(canvasName, sizeIn, dataIn)
 		})();
 	};
 
-
+	this.money_change_animation = function(playerId, amount, scalar, cb)
+	{
+		var player = this.players[playerId];
+		var len = Math.floor(amount / 10);
+		var dec_am = 10 * scalar;
+		var new_amount = player.money - amount * scalar;
+		if(amount <= 50)
+		{
+			dec_am = 1 * scalar;
+			len = amount;
+		}
+		var i = 0;
+		setTimeout(function reduce_money()
+		{
+			if(i < len)
+			{
+				player.money += dec_am;
+				setTimeout(reduce_money, 50);
+			}else
+			{
+				player.amount = new_amount;
+				cb();
+				return;
+			}
+			i++;
+		}, 50);
+	};
 
 	this.clear_dice = function()
 	{

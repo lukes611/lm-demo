@@ -107,6 +107,25 @@ function add_buttons(btn_list)
     $('#game_player_options_list_content').html(st);
 }
 
+function add_auction_input(opt)
+{
+	var buttonStyles = 'btn-default,btn-primary,btn-success,btn-info,btn-warning,btn-danger'.split(',');
+	var i = 0;
+	var st = '<div class="container-fluid">';
+	opt.participantsList.forEach(function(i)
+	{
+		st += '<div class="row"><div class="col-xs-6">' + game.players[i].name + '</div><div class="col-xs-6"><input type="number" value="0"/></div></div>';
+	});
+	st += '</div><br/>';
+	$('#game_player_options_list_content').html(st);
+	var btn = $('<button class="luke-options-buttons btn '+buttonStyles[opt.buttonList[0].buttonStyle]+'">'+opt.buttonList[0].name+'</button>');
+	$('#game_player_options_list_content').append(btn);
+	btn.click(function(elem)
+	{
+		alert('c\'ked');
+	});
+}
+
 function game_loop(input)
 {
   $('#game_player_options_list_content').html('');
@@ -115,8 +134,8 @@ function game_loop(input)
   {
     $('#game_player_options_name').html(game.current_player().name + '\'s turn');
 	$('#game_player_options_list_description').html(options.desc);
-	
-    if(options.buttonList != undefined) add_buttons(options.buttonList);
+	if(options.type == 1) add_auction_input(options);
+    if(options.buttonList != undefined && options.type == 0) add_buttons(options.buttonList);
   });
 }
 

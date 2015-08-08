@@ -88,6 +88,15 @@ function LMGame(canvasName, sizeIn, dataIn)
 						th.play(undefined, cb);
 						player.buy(location.value, property);
 					});
+				}else if(optionIn == 1)
+				{
+					this.state = 6;
+					var ob_rv = {"type":1, "desc" : "action time!, please enter a bid. A bid of zero will count as a no-bid."};
+					ob_rv.buttonList = new Array({"name":'end bidding', "id":0, "buttonStyle":2});
+					ob_rv.bidRound = 0;
+					ob_rv.participantsList = new Array();
+					this.players.forEach(function(e, i){if(e.money > 0) ob_rv.participantsList.push(i);});
+					cb(ob_rv); return;
 				}else{ this.nextPlayer(); this.state=0; this.play(undefined, cb);}
 				
 			}break;

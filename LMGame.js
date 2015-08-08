@@ -60,10 +60,18 @@ function LMGame(canvasName, sizeIn, dataIn)
 				var location = this.map_data(player.position);
 				if(location.type == 0) //is property they can buy
 				{
+					
 					var property = this.properties_data(location.value);
-					this.state = 3;
-					cb({"type":0, "desc":'you landed on: ' + location.name,
-					'buttonList':[{'name':'buy ($' + property.price + ')' , 'id':0, 'buttonStyle':2}, {'name': 'auction', 'id' : 1, "buttonStyle":5}]});
+					if(this.find_owner(location.value) == -1)
+					{
+						this.state = 3;
+						var ob_rv = {"type":0, "desc":'you landed on: ' + location.name,
+						'buttonList':new Array()};
+						//if player has enough money: let them have the option of purchasing
+						if(player.money >= property.price) ob_rv.buttonList.push({'name':'buy ($' + property.price + ')' , 'id':0, 'buttonStyle':2});
+						ob_rv.buttonList.push({'name': 'auction', 'id' : 1, "buttonStyle":5});
+						cb(ob_rv);
+					}
 				}else{this.nextPlayer();this.state=0;this.play(undefined, cb);}
 			} break;
 			case 3: //chose to purchase or not
@@ -78,8 +86,9 @@ function LMGame(canvasName, sizeIn, dataIn)
 					{
 						th.state = 4;
 						th.play(undefined, cb);
+						player.buy(location.value, property);
 					});
-				}
+				}else{ this.nextPlayer(); this.state=0; this.play(undefined, cb);}
 				
 			}break;
 			case 4: //end turn...
@@ -103,6 +112,17 @@ function LMGame(canvasName, sizeIn, dataIn)
 		}
 
 
+	};
+	
+	//find the owner by property id, returns -1 if unowned
+	this.find_owner = function(id)
+	{
+		var i = 0;
+		for(; i < this.players.length; i++)
+		{
+			if(this.players[i].owns(id)) return i;
+		}
+		return -1;
 	};
 	
 	this.map_data = function(position)
@@ -253,7 +273,7 @@ function LMGame(canvasName, sizeIn, dataIn)
 		//second row:
 		st += '<div class="row">'
 		st += '<div class="col-xs-6"> $  '+this.players[index].money+' </div>';
-		st += '<div class="col-xs-2"><img class="BootStrapFitIm" src="ims/propertylogo.png"> x M</div>';
+		st += '<div class="col-xs-2"><img class="BootStrapFitIm" src="ims/propertylogo.png"> x '+this.players[index].properties.length+'</div>';
 		st += '<div class="col-xs-2"><img class="BootStrapFitIm" src="ims/houselogo.png"> x N</div>';
 		st += '<div class="col-xs-2"><img class="BootStrapFitIm" src="ims/hotellogo.png"> x T</div>';
 		st += '</div>';

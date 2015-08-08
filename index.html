@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html>
 <head>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
   <!-- Latest compiled JavaScript -->
@@ -114,7 +114,15 @@ function add_auction_input(opt)
 	var st = '<div class="container-fluid">';
 	opt.participantsList.forEach(function(i)
 	{
-		st += '<div class="row"><div class="col-xs-6">' + game.players[i].name + '</div><div class="col-xs-6"><input type="number" value="0"/></div></div>';
+		st += '<div class="row"><div class="col-xs-5">' + game.players[i].name + '</div><div class="col-xs-5">';
+		var formValidFunction = 'var v = $(th).val(); if(v.length > 0 && isNaN(v) || (!isNaN(v) && Number(v)<0) || (!isNaN(v) && Number(v)!=Math.floor(Number(v)))) $(\'#game_auction_inputs_button_'+i+'\').attr(\'src\',\'ims/cross.png\'); else $(\'#game_auction_inputs_button_'+i+'\').attr(\'src\',\'ims/tick.png\');';
+		st += '<input class="form-control" id="game_auction_inputs_id_'+i+'" type="password" onkeyup="(function(th){ '+formValidFunction+ ' })(this);" />';
+		st += '</div><div class="col-xs-2">';
+		
+		
+		
+		st += '<img id="game_auction_inputs_button_'+i+'" class="BootStrapFitIm" src="ims/tick.png">';
+		st += '</div></div>';
 	});
 	st += '</div><br/>';
 	$('#game_player_options_list_content').html(st);
@@ -122,7 +130,16 @@ function add_auction_input(opt)
 	$('#game_player_options_list_content').append(btn);
 	btn.click(function(elem)
 	{
-		alert('c\'ked');
+		var inputs_alright = true;
+		var i = 0;
+		var tmpst = '';
+		opt.participantsList.forEach(function(i)
+		{
+			var v = $('#game_auction_inputs_id_' + i).val();
+			if(v.length > 0 && isNaN(v)) inputs_alright = false;
+			tmpst += v + ', ';
+		});
+		if(!inputs_alright) alert('warning. an auction input is incorrect. please place a positive number into the form or leave it empty.');
 	});
 }
 

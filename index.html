@@ -128,32 +128,58 @@ function add_auction_input(opt)
 	$('#game_player_options_list_content').html(st);
 	var btn = $('<button class="luke-options-buttons btn '+buttonStyles[opt.buttonList[0].buttonStyle]+'">'+opt.buttonList[0].name+'</button>');
 	$('#game_player_options_list_content').append(btn);
+	var i = 1;
+	for(i = 1; i < opt.buttonList.length; i++)
+	{
+		var b = $('<button class="luke-options-buttons btn '+buttonStyles[opt.buttonList[i].buttonStyle]+'">'+opt.buttonList[i].name+'</button>');
+		$('#game_player_options_list_content').append(b);
+		(function(){
+			var i_loop = i;
+			b.click(function()
+			{
+				opt.id_rv = opt.buttonList[i_loop].id;
+				game.play(opt, function(options) { game_process_options(options); });
+			});
+		})();
+	}
 	btn.click(function(elem)
 	{
 		var inputs_alright = true;
 		var i = 0;
-		var tmpst = '';
+		var auction_vals = new Array();
 		opt.participantsList.forEach(function(i)
 		{
 			var v = $('#game_auction_inputs_id_' + i).val();
-			if(v.length > 0 && isNaN(v)) inputs_alright = false;
-			tmpst += v + ', ';
+			if(v.length > 0 && isNaN(v))
+			{
+				inputs_alright = false;
+				auction_vals.push(0);
+			}else auction_vals.push(Number(v));
+			
 		});
 		if(!inputs_alright) alert('warning. an auction input is incorrect. please place a positive number into the form or leave it empty.');
+		else
+		{
+			opt.auction_values = auction_vals;
+			opt.id_rv = 0;
+			game.play(opt, function(options) { game_process_options(options); });
+		}
 	});
+}
+
+function game_process_options(options)
+{
+	$('#game_player_options_name').html(game.current_player().name + '\'s turn');
+	$('#game_player_options_list_description').html(options.desc);
+	if(options.type == 1) add_auction_input(options);
+    if(options.buttonList != undefined && options.type == 0) add_buttons(options.buttonList);
 }
 
 function game_loop(input)
 {
   $('#game_player_options_list_content').html('');
   $('#game_player_options_list_description').html('');
-  game.play(input, function(options)
-  {
-    $('#game_player_options_name').html(game.current_player().name + '\'s turn');
-	$('#game_player_options_list_description').html(options.desc);
-	if(options.type == 1) add_auction_input(options);
-    if(options.buttonList != undefined && options.type == 0) add_buttons(options.buttonList);
-  });
+  game.play(input, function(options) { game_process_options(options); });
 }
 
 window.onload = function()

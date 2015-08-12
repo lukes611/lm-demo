@@ -127,6 +127,19 @@ function LMGraphics(canvasName, w, h, gameData)
 		imageObj.src = fp;
 
 	};
+	
+	this.draw_image_full_path_size = function(x,y,w,h,fp)
+	{
+		//var wh = 0.3 * this.boxes[0].w;
+		var imageObj = new Image();
+		var cont = this.context;
+		imageObj.onload = function()
+		{
+			cont.drawImage(imageObj, x, y, w, h);
+		};
+		imageObj.src = fp;
+
+	};
 
 	this.find_icon_index = function(type)
 	{
@@ -165,7 +178,9 @@ function LMGraphics(canvasName, w, h, gameData)
 		buf.height = height;
 		var newOb = {
 			'name' : name,
-			'canvas' : buf
+			'canvas' : buf,
+			'w' : width,
+			'h' : height
 		};
 		var imageObj = new Image();
 		var cont = newOb.canvas.getContext('2d');
@@ -196,7 +211,7 @@ function LMGraphics(canvasName, w, h, gameData)
 
 	this.init = function()
 	{
-		var aw = Math.floor(0.9 * this.h);
+		var aw = Math.floor(0.98 * this.h);
 		this.box = {
 			'x' : Math.floor((this.w-aw)*0.5),
 			'y' : Math.floor((this.h-aw)*0.5),
@@ -208,7 +223,7 @@ function LMGraphics(canvasName, w, h, gameData)
 
 		this.boxes = new Array(39);
 		this.sub_boxes = new Array();
-		var wh1 = aw * 0.13;
+		var wh1 = aw * 0.13; //wh2 is 63% of the size of wh1
 		var wh2 = (aw-(wh1*2))/9;
 		this.boxes[0] = {'x':this.bottom_corner.x, 'y':Math.floor(this.bottom_corner.y-wh1), 'w':Math.floor(wh1),'h':Math.floor(wh1), 't':0};
 		this.boxes[10] = {'x':this.box.x, 'y':this.box.y, 'w':Math.floor(wh1),'h':Math.floor(wh1),'t':0};
@@ -298,9 +313,23 @@ function LMGraphics(canvasName, w, h, gameData)
 				j++;
 				th.list_of_dice_ims.push(input);
 				tmp_loop_j();
-			})
+			});
 		})();
-
+		
+		var other_icons_name_list = ['chance'];
+		this.other_icons = {};
+		var ii = 0;
+		(function tmp_loop_ii()
+		{
+			if(ii >= other_icons_name_list.length) { return; }
+			th.load_generic_canv_object(Math.round(wh2*0.9), Math.round(wh1*.9), other_icons_name_list[ii],
+			'ims/' + other_icons_name_list[ii] + '.png', function(input)
+			{
+				th.other_icons[other_icons_name_list[ii]] = input;
+				ii++;
+				tmp_loop_ii();
+			});
+		})();
 	};
 
 	this.drawBG = function()
@@ -310,12 +339,18 @@ function LMGraphics(canvasName, w, h, gameData)
 		var i = 0;
 		for(; i < 40; i++){ if(this.boxes[i] == undefined){ continue;}
 		this.drawRect(this.boxes[i].x, this.boxes[i].y, this.boxes[i].w, this.boxes[i].h, 'white');}
-
+		
 		for(i = 0; i < this.sub_boxes.length; i++)
 		{
 			var colorIn = 'rgb(' + this.sub_boxes[i].r + ',' + this.sub_boxes[i].g + ',' + this.sub_boxes[i].b + ')';
 			this.drawRect(this.sub_boxes[i].x, this.sub_boxes[i].y, this.sub_boxes[i].w, this.sub_boxes[i].h, colorIn);
 		}
+		
+		//this.draw_image_full_path_size(200, 50, 50, 100, 'ims/chance.png');
+		var Xat = this.boxes[7].x + this.boxes[7].w * 0.5;
+		var Yat = this.boxes[7].y + this.boxes[7].h * 0.5;
+		this.draw_image_fast(Xat, Yat, this.other_icons['chance'].canvas);
+		
 	};
 
 	this.get_loc = function(loc, pindex)

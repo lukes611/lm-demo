@@ -156,7 +156,7 @@ function LMGame(canvasName, sizeIn, dataIn)
 				}else if(winners_list.length == 1) //somebody won, let players know, before ending turn
 				{
 					var property = this.properties_data(location.value);
-					this.money_change_animation(this.playersTurn, property.price, -1, function()
+					this.money_change_animation(this.playersTurn, highest_bid, -1, function()
 					{
 						th.state = 4;
 						player.buy(location.value, property);

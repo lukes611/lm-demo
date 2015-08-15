@@ -368,7 +368,7 @@ function LMGraphics(canvasName, w, h, gameData)
 		
 		//draw community chest
 		this.draw_other_icon(2, 'commchest');
-		this.draw_other_icon(27, 'commchest');
+		this.draw_other_icon(17, 'commchest');
 		this.draw_other_icon(33, 'commchest');
 		
 		//draw waterworks/ electriccompany

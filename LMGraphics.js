@@ -207,7 +207,22 @@ function LMGraphics(canvasName, w, h, gameData)
 		};
 	};
 
-
+	this.draw_other_icon = function(boxNumber, name)
+	{
+		var angle = 0.0;
+		if(boxNumber >= 1 && boxNumber <= 10)
+			angle = 90.0;
+		else if(boxNumber >= 11 && boxNumber <= 20)
+			angle = 180.0;
+		else if(boxNumber >= 21 && boxNumber <= 30)
+			angle = 270.0;
+		this.context.save();
+		this.context.translate(Math.round(this.boxes[boxNumber].x + this.boxes[boxNumber].w * 0.5), Math.round(this.boxes[boxNumber].y + this.boxes[boxNumber].h * 0.5));
+		this.context.rotate(angle * Math.PI / 180.0);
+		this.context.translate(-Math.round(this.other_icons[name].w*0.5), -Math.round(this.other_icons[name].h*0.5));
+		this.draw_image_fast(0, 0, this.other_icons[name].canvas);
+		this.context.restore();
+	};
 
 	this.init = function()
 	{
@@ -316,7 +331,7 @@ function LMGraphics(canvasName, w, h, gameData)
 			});
 		})();
 		
-		var other_icons_name_list = ['chance'];
+		var other_icons_name_list = ['chance', 'commchest', 'electriccompany', 'incometax', 'supertax', 'train', 'waterworks'];
 		this.other_icons = {};
 		var ii = 0;
 		(function tmp_loop_ii()
@@ -346,11 +361,29 @@ function LMGraphics(canvasName, w, h, gameData)
 			this.drawRect(this.sub_boxes[i].x, this.sub_boxes[i].y, this.sub_boxes[i].w, this.sub_boxes[i].h, colorIn);
 		}
 		
-		//this.draw_image_full_path_size(200, 50, 50, 100, 'ims/chance.png');
-		var Xat = this.boxes[7].x + this.boxes[7].w * 0.5;
-		var Yat = this.boxes[7].y + this.boxes[7].h * 0.5;
-		this.draw_image_fast(Xat, Yat, this.other_icons['chance'].canvas);
+		//draw chance
+		this.draw_other_icon(7, 'chance');
+		this.draw_other_icon(22, 'chance');
+		this.draw_other_icon(36, 'chance');
 		
+		//draw community chest
+		this.draw_other_icon(2, 'commchest');
+		this.draw_other_icon(27, 'commchest');
+		this.draw_other_icon(33, 'commchest');
+		
+		//draw waterworks/ electriccompany
+		this.draw_other_icon(12, 'electriccompany');
+		this.draw_other_icon(28, 'waterworks');
+		
+		//draw tax places
+		this.draw_other_icon(4, 'incometax');
+		this.draw_other_icon(38, 'supertax');
+		
+		//draw railways
+		this.draw_other_icon(5, 'train');
+		this.draw_other_icon(15, 'train');
+		this.draw_other_icon(25, 'train');
+		this.draw_other_icon(35, 'train');
 	};
 
 	this.get_loc = function(loc, pindex)

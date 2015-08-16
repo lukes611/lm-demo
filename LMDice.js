@@ -47,7 +47,7 @@ function Diced()
 	this.val1 = 1;
 	this.val2 = 1;
 	this.num_doubles = 0;
-	this.vset = [1,3,2,12,16];
+	this.vset = [3,3,2,12,16];
 	this.index = 0;
 	this.roll = function()
 	{

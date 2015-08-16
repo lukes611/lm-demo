@@ -62,7 +62,8 @@ function LMGame(canvasName, sizeIn, dataIn)
 				{
 					
 					var property = this.properties_data(location.value);
-					if(this.find_owner(location.value) == -1)
+					var owner = this.find_owner(location.value);
+					if(owner == -1)
 					{
 						this.state = 3;
 						var ob_rv = {"type":0, "desc":'you landed on: ' + location.name,
@@ -71,6 +72,36 @@ function LMGame(canvasName, sizeIn, dataIn)
 						if(player.money >= property.price) ob_rv.buttonList.push({'name':'buy ($' + property.price + ')' , 'id':0, 'buttonStyle':2});
 						ob_rv.buttonList.push({'name': 'auction', 'id' : 1, "buttonStyle":5});
 						cb(ob_rv);
+					}else //someone owns this property
+					{
+						if(owner == this.playersTurn)
+						{
+							this.state = 4;
+							this.play('You landed on your own property.', cb);
+							return;
+						}else
+						{
+							this.state = 7; //have to pay other player
+							var set_total = this.total_in_set(property.id);
+							var owns_set = this.players[owner].owns_set(property.set, set_total);
+							var their_property = this.players[owner].property_ob(property.id);
+							var ob_rv = {"type":0, "desc":'you landed on: ' + location.name + '. Which is owned by ' + this.players[owner].name + '.',
+							'buttonList':new Array()};
+							if(!owns_set || their_property.houses == 0)
+							{
+								ob_rv.buttonList.push({'name': 'pay rent ($' + property.rent + ')', 'id' : 0, "buttonStyle":1});
+							}else if(their_property.hotels >= 1)
+							{
+								ob_rv.desc += ' ' + this.players[owner].name + ' owns a hotel!';
+								ob_rv.buttonList.push({'name': 'pay rent ($' + property.renthotel + ')', 'id' : 0, "buttonStyle":1});
+							}else
+							{
+								ob_rv.desc += ' ' + this.players[owner].name + ' owns ' + (their_property.houses == 1)? 'a house' : '' + their_property.houses + ' houses!';
+								ob_rv.buttonList.push({'name': 'pay rent ($' + property.renthotel + ')', 'id' : 0, "buttonStyle":1});
+							}
+							cb(ob_rv);
+						}
+						
 					}
 				}else{this.nextPlayer();this.state=0;this.play(undefined, cb);}
 			} break;
@@ -189,7 +220,32 @@ function LMGame(canvasName, sizeIn, dataIn)
 						cb(ob_rv); return;
 					}
 				}
-			}
+			} break;
+			case 7: //has to pay other owner
+			{
+				if(optionIn == 0) //can pay and will pay rent
+				{
+					//find out how much is owed
+					var property = this.properties_data(location.value);
+					var owner = this.find_owner(property.id);
+					var set_total = this.total_in_set(property.id);
+					var owns_set = this.players[owner].owns_set(property.set, set_total);
+					var their_property = this.players[owner].property_ob(property.id);
+					var rent_owed = 0;
+					if(!owns_set || their_property.houses == 0) rent_owed = property.rent;
+					else if(their_property.hotels >= 1) rent_owed = property.renthotel;
+					else rent_owed = new Array(property.rent1h, property.rent2h, property.rent3h, property.rent4h)[their_property.houses];
+					
+					//pay it
+					this.money_change_animation(this.playersTurn, rent_owed, -1, function()
+					{
+						th.state = 4;
+						th.play('You payed the rent!', cb);
+						return;
+					});
+					return;
+				}
+			} break;
 
 		}
 
@@ -215,6 +271,19 @@ function LMGame(canvasName, sizeIn, dataIn)
 	this.properties_data = function(id)
 	{
 		return this.gameData.properties.list[id];
+	};
+	
+	
+	this.total_in_set = function(id)
+	{
+		var set_id = this.properties_data(id).set;
+		var i = 0;
+		var count = 0;
+		for(; i < this.gameData.properties.list.length; i++)
+		{
+			if(this.gameData.properties.list[i].set == set_id) count++;
+		}
+		return count;
 	};
 	
 	this.nextPlayer = function(){ this.playersTurn = (this.playersTurn+1) % this.players.length; };

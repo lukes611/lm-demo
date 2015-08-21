@@ -258,7 +258,7 @@ function LMGraphics(canvasName, w, h, gameData)
 			this.boxes[30+i] = {'x':Math.floor(this.boxes[30].x-(wh2*i)), 'y':this.boxes[30].y, 'w':Math.floor(wh2), 'h':Math.floor(wh1),'t':1};
 			if(this.gameData.map.list[i].type == 0)
 			{
-				var prop1 = this.gameData.properties.list[this.gameData.prop_index_from_pos(i)];
+				var prop1 = this.gameData.properties.list[this.gameData.map.list[i].value];
 
 				if(prop1.type == 0)
 				{
@@ -268,7 +268,7 @@ function LMGraphics(canvasName, w, h, gameData)
 			}
 			if(this.gameData.map.list[i+10].type == 0)
 			{
-				var prop2 = this.gameData.properties.list[this.gameData.prop_index_from_pos(i+10)];
+				var prop2 = this.gameData.properties.list[this.gameData.map.list[i+10].value];
 				if(prop2.type == 0)
 				{
 					this.sub_boxes.push({'x' : this.boxes[10+i].x + miniBoxSize.ft.x,
@@ -277,7 +277,7 @@ function LMGraphics(canvasName, w, h, gameData)
 			}
 			if(this.gameData.map.list[i+20].type == 0)
 			{
-				var prop3 = this.gameData.properties.list[this.gameData.prop_index_from_pos(i+20)];
+				var prop3 = this.gameData.properties.list[this.gameData.map.list[i+20].value];
 				if(prop3.type == 0)
 				{
 					this.sub_boxes.push({'x' : this.boxes[i+20].x + miniBoxSize.ft.y,
@@ -286,7 +286,7 @@ function LMGraphics(canvasName, w, h, gameData)
 			}
 			if(this.gameData.map.list[i+30].type == 0)
 			{
-				var prop4 = this.gameData.properties.list[this.gameData.prop_index_from_pos(i+30)];
+				var prop4 = this.gameData.properties.list[this.gameData.map.list[i+30].value];
 				if(prop4.type == 0)
 				{
 					this.sub_boxes.push({'x' : this.boxes[30+i].x + miniBoxSize.ft.x,

@@ -13,6 +13,12 @@ function LMPlayer(nameIn, idolIn)
 	this.construct(nameIn, idolIn);
 }
 
+//returns true if a player can afford to spend amount dollars
+LMPlayer.prototype.has_enough = function(amount)
+{
+	return this.money >= amount;
+};
+
 //purchase a new propertyL give the property id, and a pointer to the particular property objects
 LMPlayer.prototype.buy = function(idIn, pIn)
 { 

@@ -1,106 +1,198 @@
 
+//gives the player their options at the beginning of their turn
+LMGame.prototype.play_begin = function(turn)
+{
+	this.state = 1;
+	turn.cb({
+		"type" : 0,
+		"buttonList" : [ 
+			{
+			"name": 'roll',
+			'id' : 0,
+			"buttonStyle": 1
+			}
+		],
+		"desc" : 'roll the dice...'
+	});
+};
+
+//roll dice and move
+LMGame.prototype.play_rollNmove = function(turn)
+{
+	this.roll_animation(function()
+	{
+		turn.me.dice.roll();
+		var dice_amount = turn.me.dice.total();
+		turn.me.move_player(turn.me.playersTurn, dice_amount, function()
+		{
+			turn.me.state = 2;
+			turn.me.play(undefined, turn.cb);
+		});
+	});
+};
+
+//choose to purchase a property or auction it off
+LMGame.prototype.play_buy_or_auction = function(turn)
+{
+	if(turn.option == 0) //purchase
+	{
+		this.money_change_animation(this.playersTurn, turn.property.price, -1, function()
+		{
+			turn.me.state = 4;
+			turn.player.buy(turn.location.value, turn.property);
+			turn.me.play(undefined, turn.cb);
+		});
+	}else if(turn.option == 1)//auction
+	{
+		this.state = 6;
+		var ob_rv = {
+			"type":1,
+			"desc" : "auction time!, please enter a bid. A bid of zero counts as no bid. The minimum bid is $0."
+		};
+		ob_rv.buttonList = new Array({
+			"name":'end bidding',
+			"id":0,
+			"buttonStyle":2
+		});
+		ob_rv.bidRound = 1;
+		ob_rv.participantsList = new Array();
+		ob_rv.minimum_bid = 1;
+		var i = 0;
+		for(; i < this.players.length; i++)
+		{
+			if(this.players[i].has_enough(1))
+				ob_rv.participantsList.push(i);
+		}
+		turn.cb(ob_rv); return;
+	}else
+	{ 
+		this.nextPlayer();
+		this.state=0;
+		this.play(undefined, turn.cb);
+	}
+	
+};
+
+//Give player options in their new position after they move
+LMGame.prototype.play_post_move_options = function(turn)
+{
+	if(turn.location.type == 0) //is property: buy or pay rent
+	{
+		if(turn.owner == undefined) //no owner: can purchase
+		{
+			this.state = 3;
+			var ob_rv = {
+				"type":0,
+				"desc":'you landed on: ' + turn.location.name,
+				"buttonList":new Array()
+			};
+			//if player has enough money: let them have the option of purchasing
+			if(turn.player.has_enough(turn.property.price)) 
+			{
+				ob_rv.buttonList.push({
+					'name':'buy ($' + turn.property.price + ')' ,
+					'id':0,
+					'buttonStyle':2
+				});
+			}
+			ob_rv.buttonList.push({
+				'name': 'auction',
+				'id' : 1,
+				"buttonStyle":5
+			});
+			turn.cb(ob_rv);
+		}else //someone owns this property
+		{
+			if(turn.owner_index == this.playersTurn) //if they own it
+			{
+				this.state = 4; //go to end turn state
+				this.play('You landed on your own property.', turn.cb);
+				return;
+			}else //they have to pay rent
+			{
+				this.state = 7; //rent paying state
+				var owns_set = turn.owner.owns_set(turn.property.set, turn.set_total);
+				var their_property = turn.owner.property_ob(turn.property.id);
+				var ob_rv = {
+					"type":0,
+					"desc":'you landed on: ' + turn.location.name + '. Which is owned by ' + turn.owner.name + '.',
+					'buttonList':new Array()
+				};
+				if(!owns_set || their_property.houses == 0) //pay normal rate
+				{
+					ob_rv.buttonList.push({
+						'name': 'pay rent ($' + turn.property.rent + ')',
+						'id' : 0,
+						"buttonStyle":1
+					});
+				}else if(their_property.hotels >= 1) //pay hotel rate
+				{
+					ob_rv.desc += ' ' + turn.owner.name + ' owns a hotel!';
+					ob_rv.buttonList.push({
+						'name': 'pay rent ($' + turn.property.renthotel + ')',
+						'id' : 0,
+						"buttonStyle":1
+					});
+				}else //pay the correct house rate
+				{
+					ob_rv.desc += ' ' + turn.owner.name + ' owns ' + (their_property.houses == 1)? 'a house' : '' + their_property.houses + ' houses!';
+					ob_rv.buttonList.push({
+						'name': 'pay rent ($' + turn.property.renthotel + ')',
+						'id' : 0, "buttonStyle":1
+					});
+				}
+				turn.cb(ob_rv);
+			}
+			
+		}
+	}else //if land on non property (must implement more...)
+	{
+		this.nextPlayer();
+		this.state=0;
+		this.play(undefined, turn.cb);
+	}
+};
 
 LMGame.prototype.play = function(optionIn, cb)
 {
 	var player = this.current_player();
 	var location = this.map_data(player.position);
 	var th = this;
+	
+	var turn = {
+		"player" : this.current_player(),
+		"me" : this,
+		"cb" : cb,
+		"option" : optionIn
+	};
+	
+	turn.location = this.map_data(turn.player.position);
+	if(turn.location.type == 0) //is a property
+	{
+		turn.property = this.properties_data(turn.location.value);
+		turn.owner_index = this.find_owner(turn.location.value);
+		if(turn.owner_index != -1)
+		{
+			turn.owner = this.players[turn.owner_index];
+		}
+		turn.set_total = this.total_in_set(turn.location.value)
+	}
+	
 	switch(this.state)
 	{
-		case 0:
-		{
-			this.state = 1;
-			cb({"type":0, "buttonList":[{'name': 'roll', 'id' : 0, "buttonStyle": 1}], "desc" : 'roll the dice...'});
-			return;
-		} break;
-		case 1:
-		{
-				this.roll_animation(function()
-				{
-						th.dice.roll();
-						var dice_amount = th.dice.total();
-						th.move_player(th.playersTurn, dice_amount, function()
-						{
-							th.state = 2;
-							th.play(undefined, cb);
-						})
-				});
-		}break;
-		//case 2: left player know what they got, give options
-		case 2:
-		{
-			if(location.type == 0) //is property they can buy
-			{
-				
-				var property = this.properties_data(location.value);
-				var owner = this.find_owner(location.value);
-				if(owner == -1)
-				{
-					this.state = 3;
-					var ob_rv = {"type":0, "desc":'you landed on: ' + location.name,
-					'buttonList':new Array()};
-					//if player has enough money: let them have the option of purchasing
-					if(player.money >= property.price) ob_rv.buttonList.push({'name':'buy ($' + property.price + ')' , 'id':0, 'buttonStyle':2});
-					ob_rv.buttonList.push({'name': 'auction', 'id' : 1, "buttonStyle":5});
-					cb(ob_rv);
-				}else //someone owns this property
-				{
-					if(owner == this.playersTurn)
-					{
-						this.state = 4;
-						this.play('You landed on your own property.', cb);
-						return;
-					}else
-					{
-						this.state = 7; //have to pay other player
-						var set_total = this.total_in_set(property.id);
-						var owns_set = this.players[owner].owns_set(property.set, set_total);
-						var their_property = this.players[owner].property_ob(property.id);
-						var ob_rv = {"type":0, "desc":'you landed on: ' + location.name + '. Which is owned by ' + this.players[owner].name + '.',
-						'buttonList':new Array()};
-						if(!owns_set || their_property.houses == 0)
-						{
-							ob_rv.buttonList.push({'name': 'pay rent ($' + property.rent + ')', 'id' : 0, "buttonStyle":1});
-						}else if(their_property.hotels >= 1)
-						{
-							ob_rv.desc += ' ' + this.players[owner].name + ' owns a hotel!';
-							ob_rv.buttonList.push({'name': 'pay rent ($' + property.renthotel + ')', 'id' : 0, "buttonStyle":1});
-						}else
-						{
-							ob_rv.desc += ' ' + this.players[owner].name + ' owns ' + (their_property.houses == 1)? 'a house' : '' + their_property.houses + ' houses!';
-							ob_rv.buttonList.push({'name': 'pay rent ($' + property.renthotel + ')', 'id' : 0, "buttonStyle":1});
-						}
-						cb(ob_rv);
-					}
-					
-				}
-			}else{this.nextPlayer();this.state=0;this.play(undefined, cb);}
-		} break;
+		case 0: //the starting state
+			this.play_begin(turn);
+			break;
+		case 1: //roll dice and move
+			this.play_rollNmove(turn);
+			break;
+		
+		case 2://case 2: new position options let player know what they got, give options
+			this.play_post_move_options(turn);
+			break;
 		case 3: //chose to purchase or not
-		{
-			if(optionIn == 0)
-			{//purchase
-				var property = this.properties_data(location.value);
-				this.money_change_animation(this.playersTurn, property.price, -1, function()
-				{
-					th.state = 4;
-					player.buy(location.value, property);
-					th.play(undefined, cb);
-					
-				});
-			}else if(optionIn == 1)
-			{//auction
-				this.state = 6;
-				var ob_rv = {"type":1, "desc" : "auction time!, please enter a bid. A bid of zero counts as no bid. The minimum bid is $0."};
-				ob_rv.buttonList = new Array({"name":'end bidding', "id":0, "buttonStyle":2});
-				ob_rv.bidRound = 1;
-				ob_rv.participantsList = new Array();
-				ob_rv.minimum_bid = 1;
-				this.players.forEach(function(e, i){if(e.money > 0) ob_rv.participantsList.push(i);});
-				cb(ob_rv); return;
-			}else{ this.nextPlayer(); this.state=0; this.play(undefined, cb);}
-			
-		}break;
+			this.play_buy_or_auction(turn);
+			break;
 		case 4: //end turn...
 		{
 			this.state = 5;

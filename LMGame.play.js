@@ -1,9 +1,25 @@
 
+//finalizes the turn by setting the state to newState, and calling turn.cb(param)
+LMGame.prototype.finalize_turn = function(turn, newState, param)
+{
+	if(newState != undefined)
+		this.state = newState;
+	turn.cb(param);
+};
+
+//performs the same action as finalize_turn, but with this.play(param, turn.cb) instead of turn.cb(param)
+LMGame.prototype.finalize_turn_recall = function(turn, newState, param)
+{
+	if(newState != undefined)
+		this.state = newState;
+	this.play(param, turn.cb);
+};
+
+
 //gives the player their options at the beginning of their turn
 LMGame.prototype.play_begin = function(turn)
 {
-	this.state = 1;
-	turn.cb({
+	this.finalize_turn(turn, 1, {
 		"type" : 0,
 		"buttonList" : [ 
 			{
@@ -16,6 +32,22 @@ LMGame.prototype.play_begin = function(turn)
 	});
 };
 
+//give the player their options at the end of their turn
+LMGame.prototype.play_end = function(turn)
+{
+	var msg = (turn.option == undefined )? "end your turn, or complete another task." : turn.option + ' You may now end your turn or complete some other task.';
+	this.finalize_turn(turn, 5, {
+		"type":0,
+		"buttonList":[{
+			'name': 'end turn',
+			'id' : 0,
+			"buttonStyle": 1
+		}],
+		"desc" : msg
+	});
+};
+
+
 //roll dice and move
 LMGame.prototype.play_rollNmove = function(turn)
 {
@@ -25,8 +57,7 @@ LMGame.prototype.play_rollNmove = function(turn)
 		var dice_amount = turn.me.dice.total();
 		turn.me.move_player(turn.me.playersTurn, dice_amount, function()
 		{
-			turn.me.state = 2;
-			turn.me.play(undefined, turn.cb);
+			turn.me.finalize_turn_recall(turn, 2, undefined);
 		});
 	});
 };
@@ -38,13 +69,11 @@ LMGame.prototype.play_buy_or_auction = function(turn)
 	{
 		this.money_change_animation(this.playersTurn, turn.property.price, -1, function()
 		{
-			turn.me.state = 4;
 			turn.player.buy(turn.location.value, turn.property);
-			turn.me.play(undefined, turn.cb);
+			turn.me.finalize_turn_recall(turn, 4, turn.player.name + ' got a new property: ' + turn.property.name + '.');
 		});
 	}else if(turn.option == 1)//auction
 	{
-		this.state = 6;
 		var ob_rv = {
 			"type":1,
 			"desc" : "auction time!, please enter a bid. A bid of zero counts as no bid. The minimum bid is $0."
@@ -63,12 +92,11 @@ LMGame.prototype.play_buy_or_auction = function(turn)
 			if(this.players[i].has_enough(1))
 				ob_rv.participantsList.push(i);
 		}
-		turn.cb(ob_rv); return;
+		turn.finalize_turn(turn, 6, ob_rv);
+		return;
 	}else
 	{ 
-		this.nextPlayer();
-		this.state=0;
-		this.play(undefined, turn.cb);
+		this.play_next_players_turn(turn);
 	}
 	
 };
@@ -80,7 +108,6 @@ LMGame.prototype.play_post_move_options = function(turn)
 	{
 		if(turn.owner == undefined) //no owner: can purchase
 		{
-			this.state = 3;
 			var ob_rv = {
 				"type":0,
 				"desc":'you landed on: ' + turn.location.name,
@@ -100,17 +127,14 @@ LMGame.prototype.play_post_move_options = function(turn)
 				'id' : 1,
 				"buttonStyle":5
 			});
-			turn.cb(ob_rv);
+			this.finalize_turn(turn, 3, ob_rv);
 		}else //someone owns this property
 		{
-			if(turn.owner_index == this.playersTurn) //if they own it
+			if(turn.owner_index == this.playersTurn) //if they own it, goto end state
 			{
-				this.state = 4; //go to end turn state
-				this.play('You landed on your own property.', turn.cb);
-				return;
-			}else //they have to pay rent
+				this.finalize_turn_recall(turn, 4, 'You landed on your own property.');
+			}else //they have to pay rent, goto rent paying state 7:
 			{
-				this.state = 7; //rent paying state
 				var owns_set = turn.owner.owns_set(turn.property.set, turn.set_total);
 				var their_property = turn.owner.property_ob(turn.property.id);
 				var ob_rv = {
@@ -141,7 +165,7 @@ LMGame.prototype.play_post_move_options = function(turn)
 						'id' : 0, "buttonStyle":1
 					});
 				}
-				turn.cb(ob_rv);
+				this.finalize_turn(turn, 7, ob_rv);
 			}
 			
 		}
@@ -152,6 +176,15 @@ LMGame.prototype.play_post_move_options = function(turn)
 		this.play(undefined, turn.cb);
 	}
 };
+
+//changes to next players turn, and re-calls play
+LMGame.prototype.play_next_players_turn = function(turn)
+{
+	this.nextPlayer();
+	this.finalize_turn_recall(turn, 0, undefined);
+};
+
+
 
 LMGame.prototype.play = function(optionIn, cb)
 {
@@ -180,36 +213,12 @@ LMGame.prototype.play = function(optionIn, cb)
 	
 	switch(this.state)
 	{
-		case 0: //the starting state
-			this.play_begin(turn);
-			break;
-		case 1: //roll dice and move
-			this.play_rollNmove(turn);
-			break;
-		
-		case 2://case 2: new position options let player know what they got, give options
-			this.play_post_move_options(turn);
-			break;
-		case 3: //chose to purchase or not
-			this.play_buy_or_auction(turn);
-			break;
-		case 4: //end turn...
-		{
-			this.state = 5;
-			var msg = (optionIn == undefined )? "end your turn, or complete another task." : optionIn + ' You may now end your turn or complete some other task.';
-			cb({"type":0, "buttonList":[{'name': 'end turn', 'id' : 0, "buttonStyle": 1}], "desc" : msg});
-			return;
-		} break;
-		case 5: //switch to new player state
-		{
-			if(optionIn == 0)
-			{
-				this.state = 0;
-				this.nextPlayer();
-				this.play(undefined, cb);
-			}
-			
-		} break;			
+		case 0: /*the starting state*/ this.play_begin(turn); break;
+		case 1: /*roll dice and move*/ this.play_rollNmove(turn); break;
+		case 2:/*give player their options post move*/ this.play_post_move_options(turn); break;
+		case 3: /*chose to purchase or not*/ this.play_buy_or_auction(turn); break;
+		case 4: /*end turn...*/ this.play_end(turn); break;
+		case 5: /*switch to new player state*/ this.play_next_players_turn(turn); break;			
 		case 6:
 		{//process auction input, send for another auction OR purchase for player
 			//cases: 0: clear winner, purchase their property, 1: zero winners do nothing, 2: multiple winners

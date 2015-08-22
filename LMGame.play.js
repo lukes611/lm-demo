@@ -184,12 +184,39 @@ LMGame.prototype.play_post_move_options = function(turn)
 			}
 			
 		}
+	}else if(turn.location.type == 4 || turn.location.type == 8) //landed on income tax
+	{
+		var msg = (turn.location.type == 4)?
+			'Income tax. Pay $200.'
+			:'Super Tax. Pay $100.';
+		var ob_rv = {
+			type : 0,
+			desc : msg,
+			buttonList : [
+				{
+					name : "pay",
+					id : 0,
+					buttonStyle : 1
+				}
+			]
+		};
+		this.finalize_turn(turn, 8, ob_rv);
 	}else //if land on non property (must implement more...)
 	{
+		this.finalize_turn_recall(turn, 4, 'Options for Tile: ' + turn.location.name + ' not yet implemented.');
 		this.nextPlayer();
 		this.state=0;
 		this.play(undefined, turn.cb);
 	}
+};
+
+//pay tax
+LMGame.prototype.play_pay_tax = function(turn)
+{
+	this.money_change_animation(turn.turn, turn.location.value, -1, function()
+	{
+		turn.me.finalize_turn_recall(turn, 4, 'Tax Payed.');
+	});
 };
 
 //changes to next players turn, and re-calls play
@@ -361,6 +388,7 @@ LMGame.prototype.play = function(optionIn, cb)
 		case 5: /*switch to new player state*/ this.play_next_players_turn(turn); break;			
 		case 6: /*process auction input*/ this.play_process_auction_input(turn); break;
 		case 7: /*pay rent*/ this.play_pay_rent(turn); break;
+		case 8: /*pay tax*/ this.play_pay_tax(turn); break;
 	}
 
 

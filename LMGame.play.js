@@ -59,9 +59,21 @@ LMGame.prototype.play_rollNmove = function(turn)
 	{
 		turn.me.dice.roll();
 		var dice_amount = turn.me.dice.total();
+		var old_position = turn.player.position;
+		var new_position = (turn.player.position+dice_amount) % turn.me.gameData.map.list.length;
 		turn.me.move_player(turn.me.playersTurn, dice_amount, function()
 		{
-			turn.me.finalize_turn_recall(turn, 2, undefined);
+			if(new_position < old_position)
+			{
+				turn.me.money_change_animation(turn.turn, 200, 1, function()
+				{
+					turn.me.finalize_turn_recall(turn, 2, 'You passed GO! and collected $200.');
+				});
+			}else
+			{
+				turn.me.finalize_turn_recall(turn, 2, undefined);
+			}
+			
 		});
 	});
 };
@@ -187,16 +199,17 @@ LMGame.prototype.play_next_players_turn = function(turn)
 	this.finalize_turn_recall(turn, 0, undefined);
 };
 
+//process the input from an auction
 LMGame.prototype.play_process_auction_input = function(turn)
 {
 	//process auction input, send for another auction OR purchase for player
 	//cases: 0: clear winner, purchase their property, 1: zero winners do nothing, 2: multiple winners
-	if(turn.option.id_rv == 1)
+	if(turn.option.id == 1)
 	{
 		//reset bid
 		this.finalize_turn_recall(turn, 3, 1);
 		return;
-	}else if(turn.option.id_rv == 2)
+	}else if(turn.option.id == 2)
 	{
 		//cancel the bid
 		this.finalize_turn_recall(turn, 4, 'Auction Cancelled. No one gets the property.');
@@ -206,24 +219,24 @@ LMGame.prototype.play_process_auction_input = function(turn)
 	var highest_bid = -1;
 	var winners_list = [];
 	var set_vals = false;
-	for(; i < turn.option.participantsList.length; i++)
+	for(; i < this.last_option.participantsList.length; i++)
 	{
 		//if player has enough money
-		var p = this.players[turn.option.participantsList[i]];
+		var p = this.players[this.last_option.participantsList[i]];
 		var bid = turn.option.auction_values[i];
-		if(!p.has_enough(bid) || bid < turn.option.minimum_bid)
+		if(!p.has_enough(bid) || bid < this.last_option.minimum_bid)
 			continue;
 		if(turn.option.auction_values[i] > highest_bid || !set_vals)
 		{
 			winners_list.length = 0; //clear array
-			winners_list.push(turn.option.participantsList[i]);
+			winners_list.push(this.last_option.participantsList[i]);
 			highest_bid = turn.option.auction_values[i];
 			set_vals = true;
 		}else if(turn.option.auction_values[i] == highest_bid)
-			winners_list.push(turn.option.participantsList[i]);
+			winners_list.push(this.last_option.participantsList[i]);
 	}
 	
-	if((winners_list.length == 0 || highest_bid == 0) && turn.option.bidRound == 1) //no one won
+	if((winners_list.length == 0 || highest_bid == 0) && this.last_option.bidRound == 1) //no one won
 	{
 		this.finalize_turn_recall(turn, 4, 'Nobody won at the auction. No one gets the property.');
 		return;
@@ -237,9 +250,9 @@ LMGame.prototype.play_process_auction_input = function(turn)
 		});
 	}else
 	{
-		if(highest_bid < turn.option.minimum_bid || winners_list.length == 0 || highest_bid == 0)
+		if(highest_bid < this.last_option.minimum_bid || winners_list.length == 0 || highest_bid == 0)
 		{//incorrect input
-			var ob_rv = {"type":1, "desc" : "Auction round " + turn.option.bidRound + ". The auction had no clear winner. After round 1 there must be a winner. A bid of zero counts as no bid but at least one player must bid the minimum bid of $" + turn.option.minimum_bid + ". Otherwise you can reset the auction to state-over, or cancel the auction, which means no one will get this property."};
+			var ob_rv = {"type":1, "desc" : "Auction round " + this.last_option.bidRound + ". The auction had no clear winner. After round 1 there must be a winner. A bid of zero counts as no bid but at least one player must bid the minimum bid of $" + this.last_option.minimum_bid + ". Otherwise you can reset the auction to state-over, or cancel the auction, which means no one will get this property."};
 			ob_rv.buttonList = [{
 				"name":'end bidding',
 				"id":0,
@@ -255,18 +268,17 @@ LMGame.prototype.play_process_auction_input = function(turn)
 				"id":2,
 				"buttonStyle":5
 			});
-			ob_rv.bidRound = turn.option.bidRound;
-			ob_rv.participantsList = turn.option.participantsList;
-			ob_rv.minimum_bid = turn.option.minimum_bid;
+			ob_rv.bidRound = this.last_option.bidRound;
+			ob_rv.participantsList = this.last_option.participantsList;
+			ob_rv.minimum_bid = this.last_option.minimum_bid;
 			this.finalize_turn(turn, undefined, ob_rv);
 			return;
 		}else
 		{
 			//genuine tie
-			turn.option.bidRound++;
 			var ob_rv = {
 				"type":1,
-				"desc" : "Auction round " + turn.option.bidRound + ". A bid of zero counts as no bid. The minimum bid is $" + highest_bid + ". Reset the auction to state-over, cancelling the auction means no one will get this property."
+				"desc" : "Auction round " + (this.last_option.bidRound+1) + ". A bid of zero counts as no bid. The minimum bid is $" + highest_bid + ". Reset the auction to state-over, cancelling the auction means no one will get this property."
 			};
 			ob_rv.buttonList = [{
 				"name":'end bidding',
@@ -281,7 +293,7 @@ LMGame.prototype.play_process_auction_input = function(turn)
 				"id":2,
 				"buttonStyle":5
 			}];
-			ob_rv.bidRound = turn.option.bidRound;
+			ob_rv.bidRound = this.last_option.bidRound;
 			ob_rv.participantsList = winners_list;
 			ob_rv.minimum_bid = highest_bid;
 			this.finalize_turn(turn, undefined, ob_rv);
@@ -289,6 +301,7 @@ LMGame.prototype.play_process_auction_input = function(turn)
 	}
 };
 
+//player pays the rent
 LMGame.prototype.play_pay_rent = function(turn)
 {
 	if(turn.option == 0) //can pay and will pay rent

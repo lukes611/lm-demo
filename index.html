@@ -149,8 +149,10 @@ function add_auction_input(opt)
 			var i_loop = i;
 			b.click(function()
 			{
-				opt.id_rv = opt.buttonList[i_loop].id;
-				game.play(opt, function(options) { game_process_options(options); });
+				var _id = opt.buttonList[i_loop].id;
+				game.play({
+					"id" : _id,
+				}, function(options) { game_process_options(options); });
 			});
 		})();
 	}
@@ -159,22 +161,29 @@ function add_auction_input(opt)
 		var inputs_alright = true;
 		var i = 0;
 		var auction_vals = new Array();
-		opt.participantsList.forEach(function(i)
+		for(; i < opt.participantsList.length; i++)
 		{
 			var v = $('#game_auction_inputs_id_' + i).val();
-			if(v.length > 0 && isNaN(v))
+			if(v.length <= 0)
+				auction_vals.push(0);
+			else if(isNaN(v))
 			{
 				inputs_alright = false;
-				auction_vals.push(0);
-			}else auction_vals.push(Number(v));
-			
-		});
-		if(!inputs_alright) alert('warning. an auction input is incorrect. please place a positive number into the form or leave it empty.');
+				break;
+			}else
+				auction_vals.push(Number(v));
+		}
+		if(!inputs_alright)
+			alert('warning. an auction input is incorrect. please place a positive number into the form or leave it empty.');
 		else
 		{
-			opt.auction_values = auction_vals;
-			opt.id_rv = 0;
-			game.play(opt, function(options) { game_process_options(options); });
+			var options_in = {
+				auction_values : auction_vals,
+				id : 0
+			};
+			game.play(options_in, function(options){ 
+				game_process_options(options);
+			});
 		}
 	});
 }
@@ -207,8 +216,8 @@ window.onload = function()
 	game.add_player('luke', 'car');
 	game.add_player('thao', 'boot');
 	
-	game.add_player('jasmine', 'dog');
-	game.add_player('michael', 'hat');
+	//game.add_player('jasmine', 'dog');
+	//game.add_player('michael', 'hat');
 
 
 

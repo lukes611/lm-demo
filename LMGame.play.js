@@ -4,6 +4,8 @@ LMGame.prototype.finalize_turn = function(turn, newState, param)
 {
 	if(newState != undefined)
 		this.state = newState;
+	this.last_option = param;
+	this.last_turn = turn;
 	turn.cb(param);
 };
 
@@ -12,6 +14,8 @@ LMGame.prototype.finalize_turn_recall = function(turn, newState, param)
 {
 	if(newState != undefined)
 		this.state = newState;
+	this.last_option = param;
+	this.last_turn = turn;
 	this.play(param, turn.cb);
 };
 
@@ -92,8 +96,7 @@ LMGame.prototype.play_buy_or_auction = function(turn)
 			if(this.players[i].has_enough(1))
 				ob_rv.participantsList.push(i);
 		}
-		turn.finalize_turn(turn, 6, ob_rv);
-		return;
+		this.finalize_turn(turn, 6, ob_rv);
 	}else
 	{ 
 		this.play_next_players_turn(turn);
@@ -184,15 +187,139 @@ LMGame.prototype.play_next_players_turn = function(turn)
 	this.finalize_turn_recall(turn, 0, undefined);
 };
 
+LMGame.prototype.play_process_auction_input = function(turn)
+{
+	//process auction input, send for another auction OR purchase for player
+	//cases: 0: clear winner, purchase their property, 1: zero winners do nothing, 2: multiple winners
+	if(turn.option.id_rv == 1)
+	{
+		//reset bid
+		this.finalize_turn_recall(turn, 3, 1);
+		return;
+	}else if(turn.option.id_rv == 2)
+	{
+		//cancel the bid
+		this.finalize_turn_recall(turn, 4, 'Auction Cancelled. No one gets the property.');
+		return;
+	}
+	var i = 0;
+	var highest_bid = -1;
+	var winners_list = [];
+	var set_vals = false;
+	for(; i < turn.option.participantsList.length; i++)
+	{
+		//if player has enough money
+		var p = this.players[turn.option.participantsList[i]];
+		var bid = turn.option.auction_values[i];
+		if(!p.has_enough(bid) || bid < turn.option.minimum_bid)
+			continue;
+		if(turn.option.auction_values[i] > highest_bid || !set_vals)
+		{
+			winners_list.length = 0; //clear array
+			winners_list.push(turn.option.participantsList[i]);
+			highest_bid = turn.option.auction_values[i];
+			set_vals = true;
+		}else if(turn.option.auction_values[i] == highest_bid)
+			winners_list.push(turn.option.participantsList[i]);
+	}
+	
+	if((winners_list.length == 0 || highest_bid == 0) && turn.option.bidRound == 1) //no one won
+	{
+		this.finalize_turn_recall(turn, 4, 'Nobody won at the auction. No one gets the property.');
+		return;
+	}else if(winners_list.length == 1)//somebody won, let players know, before ending turn
+	{
+		this.money_change_animation(winners_list[0], highest_bid, -1, function()
+		{
+			turn.me.players[winners_list[0]].buy(turn.location.value, turn.property);
+			turn.me.finalize_turn_recall(turn, 4, turn.me.players[winners_list[0]].name + ' won the auction! with a bid of $' + highest_bid);
+			return;
+		});
+	}else
+	{
+		if(highest_bid < turn.option.minimum_bid || winners_list.length == 0 || highest_bid == 0)
+		{//incorrect input
+			var ob_rv = {"type":1, "desc" : "Auction round " + turn.option.bidRound + ". The auction had no clear winner. After round 1 there must be a winner. A bid of zero counts as no bid but at least one player must bid the minimum bid of $" + turn.option.minimum_bid + ". Otherwise you can reset the auction to state-over, or cancel the auction, which means no one will get this property."};
+			ob_rv.buttonList = [{
+				"name":'end bidding',
+				"id":0,
+				"buttonStyle":2
+			}];
+			ob_rv.buttonList.push({
+				"name":'reset',
+				"id":1,
+				"buttonStyle":4
+			});
+			ob_rv.buttonList.push({
+				"name":'cancel',
+				"id":2,
+				"buttonStyle":5
+			});
+			ob_rv.bidRound = turn.option.bidRound;
+			ob_rv.participantsList = turn.option.participantsList;
+			ob_rv.minimum_bid = turn.option.minimum_bid;
+			this.finalize_turn(turn, undefined, ob_rv);
+			return;
+		}else
+		{
+			//genuine tie
+			turn.option.bidRound++;
+			var ob_rv = {
+				"type":1,
+				"desc" : "Auction round " + turn.option.bidRound + ". A bid of zero counts as no bid. The minimum bid is $" + highest_bid + ". Reset the auction to state-over, cancelling the auction means no one will get this property."
+			};
+			ob_rv.buttonList = [{
+				"name":'end bidding',
+				"id":0,
+				"buttonStyle":2
+			},{
+				"name":'reset',
+				"id":1,
+				"buttonStyle":4
+			},{
+				"name":'cancel',
+				"id":2,
+				"buttonStyle":5
+			}];
+			ob_rv.bidRound = turn.option.bidRound;
+			ob_rv.participantsList = winners_list;
+			ob_rv.minimum_bid = highest_bid;
+			this.finalize_turn(turn, undefined, ob_rv);
+		}
+	}
+};
 
+LMGame.prototype.play_pay_rent = function(turn)
+{
+	if(turn.option == 0) //can pay and will pay rent
+	{
+		//find out how much is owed
+		var owns_set = turn.owner.owns_set(turn.property.set, turn.set_total);
+		var their_property = turn.owner.property_ob(turn.property.id);
+		var rent_owed = 0;
+		if(!owns_set || their_property.houses == 0) rent_owed = turn.property.rent;
+		else if(their_property.hotels >= 1) rent_owed = turn.property.renthotel;
+		else rent_owed = [
+			turn.property.rent1h,
+			turn.property.rent2h,
+			turn.property.rent3h,
+			turn.property.rent4h
+		][their_property.houses];
+		
+		//pay it
+		this.money_change_animation(this.playersTurn, rent_owed, -1, function()
+		{
+			turn.me.finalize_turn_recall(turn, 4, 'You payed the rent!');
+		});
+	}
+};
 
 LMGame.prototype.play = function(optionIn, cb)
 {
-	var player = this.current_player();
-	var location = this.map_data(player.position);
-	var th = this;
 	
 	var turn = {
+		"current_state" : this.state,
+		"turn" : this.playersTurn,
 		"player" : this.current_player(),
 		"me" : this,
 		"cb" : cb,
@@ -219,106 +346,8 @@ LMGame.prototype.play = function(optionIn, cb)
 		case 3: /*chose to purchase or not*/ this.play_buy_or_auction(turn); break;
 		case 4: /*end turn...*/ this.play_end(turn); break;
 		case 5: /*switch to new player state*/ this.play_next_players_turn(turn); break;			
-		case 6:
-		{//process auction input, send for another auction OR purchase for player
-			//cases: 0: clear winner, purchase their property, 1: zero winners do nothing, 2: multiple winners
-			if(optionIn.id_rv == 1)
-			{//reset bid
-				this.state = 3;
-				this.play(1, cb);
-				return;
-				
-			}else if(optionIn.id_rv == 2)
-			{//cancel the bid
-				this.state = 4;
-				this.play('Auction Cancelled. No one gets the property.', cb);
-				return;
-			}
-			var i = 0;
-			var highest_bid = -1;
-			var winners_list = [];
-			var set_vals = false;
-			for(; i < optionIn.participantsList.length; i++)
-			{
-				//if player has enough money
-				if(this.players[optionIn.participantsList[i]].money < optionIn.auction_values[i] || this.players[optionIn.participantsList[i]].money < optionIn.minimum_bid) continue;
-				if(optionIn.auction_values[i] > highest_bid || !set_vals)
-				{
-					winners_list.length = 0; //clear array
-					winners_list.push(optionIn.participantsList[i]);
-					highest_bid = optionIn.auction_values[i];
-					set_vals = true;
-				}else if(optionIn.auction_values[i] == highest_bid) winners_list.push(optionIn.participantsList[i]);
-			}
-			
-			if((winners_list.length == 0 || highest_bid == 0) && optionIn.bidRound == 1) //no one won
-			{
-				this.state = 4;
-				this.play('Nobody won at the auction. No one gets the property.', cb);
-				return;
-			}else if(winners_list.length == 1) //somebody won, let players know, before ending turn
-			{
-				var property = this.properties_data(location.value);
-				this.money_change_animation(winners_list[0], highest_bid, -1, function()
-				{
-					th.state = 4;
-					th.players[winners_list[0]].buy(location.value, property);
-					th.play(th.players[winners_list[0]].name + ' won the auction! with a bid of $' + highest_bid, cb);
-					return;
-				});
-			}else
-			{
-				if(highest_bid < optionIn.minimum_bid || winners_list.length == 0 || highest_bid == 0)
-				{//incorrect input
-					var ob_rv = {"type":1, "desc" : "Auction round " + optionIn.bidRound + ". The auction had no clear winner. After round 1 there must be a winner. A bid of zero counts as no bid but at least one player must bid the minimum bid of $" + optionIn.minimum_bid + ". Otherwise you can reset the auction to state-over, or cancel the auction, which means no one will get this property."};
-					ob_rv.buttonList = new Array({"name":'end bidding', "id":0, "buttonStyle":2});
-					ob_rv.buttonList.push({"name":'reset', "id":1, "buttonStyle":4});
-					ob_rv.buttonList.push({"name":'cancel', "id":2, "buttonStyle":5});
-					ob_rv.bidRound = optionIn.bidRound;
-					ob_rv.participantsList = optionIn.participantsList;
-					ob_rv.minimum_bid = optionIn.minimum_bid;
-					cb(ob_rv); return;
-					
-				}else
-				{//genuine ty
-					optionIn.bidRound++;
-					var ob_rv = {"type":1, "desc" : "Auction round " + optionIn.bidRound + ". A bid of zero counts as no bid. The minimum bid is $" + highest_bid + ". Reset the auction to state-over, cancelling the auction means no one will get this property."};
-					ob_rv.buttonList = new Array({"name":'end bidding', "id":0, "buttonStyle":2});
-					ob_rv.buttonList.push({"name":'reset', "id":1, "buttonStyle":4});
-					ob_rv.buttonList.push({"name":'cancel', "id":2, "buttonStyle":5});
-					ob_rv.bidRound = optionIn.bidRound;
-					ob_rv.participantsList = winners_list;
-					ob_rv.minimum_bid = highest_bid;
-					cb(ob_rv); return;
-				}
-			}
-		} break;
-		case 7: //has to pay other owner
-		{
-			if(optionIn == 0) //can pay and will pay rent
-			{
-				//find out how much is owed
-				var property = this.properties_data(location.value);
-				var owner = this.find_owner(property.id);
-				var set_total = this.total_in_set(property.id);
-				var owns_set = this.players[owner].owns_set(property.set, set_total);
-				var their_property = this.players[owner].property_ob(property.id);
-				var rent_owed = 0;
-				if(!owns_set || their_property.houses == 0) rent_owed = property.rent;
-				else if(their_property.hotels >= 1) rent_owed = property.renthotel;
-				else rent_owed = new Array(property.rent1h, property.rent2h, property.rent3h, property.rent4h)[their_property.houses];
-				
-				//pay it
-				this.money_change_animation(this.playersTurn, rent_owed, -1, function()
-				{
-					th.state = 4;
-					th.play('You payed the rent!', cb);
-					return;
-				});
-				return;
-			}
-		} break;
-
+		case 6: /*process auction input*/ this.play_process_auction_input(turn); break;
+		case 7: /*pay rent*/ this.play_pay_rent(turn); break;
 	}
 
 

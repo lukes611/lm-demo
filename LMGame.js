@@ -9,6 +9,8 @@ function LMGame(canvasName, sizeIn, dataIn)
 	this.drawDice = false;
 	this.playersTurn = 0;
 	this.state = 0; //beginning state
+	this.last_option = undefined;
+	this.last_turn = undefined;
 }
 
 //add a new player

@@ -9,6 +9,7 @@ function LMPlayer(nameIn, idolIn)
 		this.money = 300;
 		this.position = 0;
 		this.idol = (idolIn==undefined)? 'dog' : idolIn;
+		this.cards = new Array();
 	};
 	this.construct(nameIn, idolIn);
 }

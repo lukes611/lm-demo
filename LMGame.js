@@ -3,6 +3,8 @@
 function LMGame(canvasName, sizeIn, dataIn)
 {
 	this.gameData = dataIn;
+	//shuffle the cards:
+	this.gameData.cards.list.sort(function(){return Math.random()-0.5;});
 	this.players = new Array();
 	this.dice = new Diced();
 	this.graphx = new LMGraphics(canvasName, sizeIn.w, sizeIn.h, this.gameData);

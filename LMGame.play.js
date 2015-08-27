@@ -201,6 +201,22 @@ LMGame.prototype.play_post_move_options = function(turn)
 			]
 		};
 		this.finalize_turn(turn, 8, ob_rv);
+	}else if(turn.location.type == 2 || turn.location.type == 3) //lands on chance or community chest
+	{
+		var type = turn.location.type == 2 ? 'community chest' : 'chance';
+		var msg = 'You landed on ' + type + '.';
+		var ob_rv = {
+			type : 0,
+			desc : msg,
+			buttonList : [
+				{
+					name : "pick up card",
+					id : 0,
+					buttonStyle : 1
+				}
+			]
+		};
+		this.finalize_turn(turn, 9, ob_rv);
 	}else //if land on non property (must implement more...)
 	{
 		this.finalize_turn_recall(turn, 4, 'Options for Tile: ' + turn.location.name + ' not yet implemented.');
@@ -354,6 +370,29 @@ LMGame.prototype.play_pay_rent = function(turn)
 	}
 };
 
+//pick up a single chance/community chest card
+LMGame.prototype.play_pick_up_commchance = function(turn)
+{
+	//grab a random card from the list
+	var type = turn.location.type == 2 ? 0 : 1;
+	var i = 0;
+	for(; i < this.gameData.cards.list.length; i++)
+		if(this.gameData.cards.list[i].type == type) break;
+	var card = this.gameData.cards.list.splice(i,1)[0]; //retrieve the card
+	var ob_rv = {
+		type : 0,
+		desc : card.description,
+		buttonList : [
+			{
+				name : "execute",
+				id : 0,
+				buttonStyle : 1
+			}
+		]
+	};
+	this.finalize_turn(turn, 10, ob_rv);
+};
+
 LMGame.prototype.play = function(optionIn, cb)
 {
 	
@@ -389,6 +428,7 @@ LMGame.prototype.play = function(optionIn, cb)
 		case 6: /*process auction input*/ this.play_process_auction_input(turn); break;
 		case 7: /*pay rent*/ this.play_pay_rent(turn); break;
 		case 8: /*pay tax*/ this.play_pay_tax(turn); break;
+		case 9: /*pick up chance/community chest card*/ this.play_pick_up_commchance(turn); break;
 	}
 
 

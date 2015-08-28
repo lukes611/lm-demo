@@ -156,20 +156,15 @@ LMGame.prototype.move_player_single_backwards = function(index, cb, speed)
 	var incer = 1 / ntimes;
 	var original = this.players[index].position;
 	var new_pos = original - 1;
-	new_pos = new_pos < 0 ? new_pos + th.graphx.boxes.length: new_pos;
+	new_pos = new_pos < 0 ? new_pos + this.graphx.boxes.length: new_pos;
 	var th = this;
-	console.log('new position: ' + new_pos);
 	var ftmp = function()
 	{
-		var np = original;
+		var np = th.players[index].position;
 		np -= incer;
 		np = np < 0 ? np + th.graphx.boxes.length : np;
-		if(np < 0) console.log('ouch!');
-		console.log(np);
-		original = np;
-		console.log('orig: ' + original);
-		//th.players[index].position = np;
-		var diff = Math.abs(original-new_pos);
+		th.players[index].position = np;
+		var diff = Math.abs(th.players[index].position-new_pos);
 		if(diff < incer)
 		{
 			th.players[index].position = new_pos;

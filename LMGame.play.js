@@ -378,7 +378,7 @@ LMGame.prototype.play_pick_up_commchance = function(turn)
 	var i = 0;
 	for(; i < this.gameData.cards.list.length; i++)
 		if(this.gameData.cards.list[i].type == type) break;
-	var card = this.gameData.cards.list.splice(26,1)[0]; //retrieve the card (should be i as first param)
+	var card = this.gameData.cards.list.splice(19,1)[0]; //retrieve the card (should be i as first param)
 	var button_msg = 'collect,pay,advance,,keep card,advance,advance,go to jail'.split(',')[card.func[0]];
 	var ob_rv = {
 		type : 0,

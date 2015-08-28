@@ -451,11 +451,7 @@ LMGame.prototype.play_commchance = function(turn)
 		});
 		else
 		{
-			var amount = 0;
-			if(turn.player.position > card.location)
-			{
-				amount = (39-turn.player.position) + card.location;
-			}else amount = card.location - turn.player.position;
+			var amount = this.get_closest_route_advance(turn.player.position, card.location);
 			this.move_player(turn.turn, amount, function()
 			{
 				turn.me.finalize_turn_recall(turn, 2);
@@ -464,10 +460,10 @@ LMGame.prototype.play_commchance = function(turn)
 	}else if(card.func[0] == 4) //get out of jail free card...
 	{
 		turn.player.cards.push(card);
-		_end_('"Get out of jail" card kept');
+		_end_('"Get out of jail free" card kept');
 	}else if(card.func[0] == 5) //advance to nearest station
 	{
-		
+		//use get_closest_property_type function from LMGame.helper.js
 	}else if(card.func[0] == 6) //advance to nearest utility
 	{
 		

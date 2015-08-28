@@ -24,6 +24,67 @@ LMGame.prototype.properties_data = function(id)
 	return this.gameData.properties.list[id];
 };
 
+//returns the amount you should move to get to a spot which is around yoy (either forwards x: returns x or backwards y: move back y spaces)
+LMGame.prototype.get_closest_route = function(current_position, new_position)
+{
+	var dist1 = 0, dist2 = 0;
+	if(current_position > new_position) //if new position is behind, check the distances fw && bw
+	{
+		dist1 = (39-current_position) + new_position;
+		dist2 = -(current_position - new_position);
+	}else
+	{
+		dist1 = new_position - current_position;
+		dist2 = -(current_position + (39-new_position));
+	}
+	return (Math.abs(dist1) < Math.abs(dist2)) ? dist1 : dist2;
+	
+};
+
+//retrieves the property with a specified property type "type" which is the closest to current_position
+LMGame.prototype.get_closest_property_type = function(current_position, type)
+{
+	var set = false;
+	var best_dist = 0;
+	var index = -1;
+	var i = 0;
+	for(;i < this.map.list.length; i++)
+	{
+		if(this.map.list[i].type == type && current_position != i)
+		{
+			var property = this.properties_data(this.map.list[i].value);
+			var dist = this.get_closest_route_advance(current_position, i);
+			if(property.type == type)
+			{
+				if(!set)
+				{
+					index = i;
+					best_dist = dist;
+					set = true;
+				}else if(dist < best_dist)
+				{
+					index = i;
+					best_dist = dist;
+				}
+			}
+		}
+	}
+	return {
+		location : index,
+		move_amount : best_dist
+	};
+};
+
+//returns the amount you should move (only positive) to get to a spot which is around yoy (either forwards x: returns x or backwards y: move back y spaces)
+LMGame.prototype.get_closest_route_advance = function(current_position, new_position)
+{
+	if(current_position > new_position) //if new position is behind, check the distances fw && bw
+	{
+		return (39-current_position) + new_position;
+	}
+	return new_position - current_position;
+};
+
 //returns the total number of properties in the same set as the property indicated by id
 LMGame.prototype.total_in_set = function(id)
 {

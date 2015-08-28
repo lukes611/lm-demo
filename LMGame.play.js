@@ -378,19 +378,103 @@ LMGame.prototype.play_pick_up_commchance = function(turn)
 	var i = 0;
 	for(; i < this.gameData.cards.list.length; i++)
 		if(this.gameData.cards.list[i].type == type) break;
-	var card = this.gameData.cards.list.splice(i,1)[0]; //retrieve the card
+	var card = this.gameData.cards.list.splice(26,1)[0]; //retrieve the card (should be i as first param)
+	var button_msg = 'collect,pay,advance,,keep card,advance,advance,go to jail'.split(',')[card.func[0]];
 	var ob_rv = {
 		type : 0,
 		desc : card.description,
 		buttonList : [
 			{
-				name : "execute",
+				name : button_msg,
 				id : 0,
 				buttonStyle : 1
 			}
-		]
+		],
+		card : card
 	};
 	this.finalize_turn(turn, 10, ob_rv);
+};
+
+//handle a community chest or chance card
+LMGame.prototype.play_commchance = function(turn)
+{
+	var card = this.last_option.card;
+	
+	var _end_ = function()
+	{
+		//place card back in deck
+		turn.me.gameData.cards.list.push(card);
+		//end turn
+		turn.me.finalize_turn_recall(turn, 4);
+	};
+	
+	//handle card consequences
+	if(card.func[0] == 0) //collect money from the bank
+	{
+		this.money_change_animation(turn.turn, card.amount[0], 1, _end_);
+	}else if(card.func[0] == 1) //pay money
+	{
+		if(card.transfer == 0)//pay bank
+		{
+			this.money_change_animation(turn.turn, card.amount[0], -1, _end_);
+		}else if(card.transfer == 1) //pay other players
+		{
+			var i = 0;
+			var players_to_process = [];
+			for(; i < this.players.length; i++)
+				if(i != turn.turn) players_to_process.push(i);
+			i = 0;
+			(function exchange_money()
+			{
+				if(i < players_to_process.length)
+				{
+					turn.me.money_player_exchange(turn.turn, players_to_process[i], card.amount[0], function()
+					{
+						i++;
+						exchange_money();
+					})
+				}else
+				{
+					_end_();
+				}
+			})();
+		}else if(card.transfer == 2) //pay per house / hotel
+		{
+			var buildings = turn.player.houses_hotels_count();
+			this.money_change_animation(turn.turn, card.amount[0]*buildings.houses + card.amount[1]*buildings.hotels, -1, _end_);
+		}
+	}else if(card.func[0] == 2) //advance to new spot
+	{
+		if(card.location < 0) this.move_player(turn.turn, card.location, function()
+		{
+			turn.me.finalize_turn_recall(turn, 2);
+		});
+		else
+		{
+			var amount = 0;
+			if(turn.player.position > card.location)
+			{
+				amount = (39-turn.player.position) + card.location;
+			}else amount = card.location - turn.player.position;
+			this.move_player(turn.turn, amount, function()
+			{
+				turn.me.finalize_turn_recall(turn, 2);
+			});
+		}
+	}else if(card.func[0] == 4) //get out of jail free card...
+	{
+		
+	}else if(card.func[0] == 5) //advance to nearest station
+	{
+		
+	}else if(card.func[0] == 6) //advance to nearest utility
+	{
+		
+	}else if(card.func[0] == 7) //go to jail
+	{
+		
+	}
+	
 };
 
 LMGame.prototype.play = function(optionIn, cb)
@@ -429,6 +513,7 @@ LMGame.prototype.play = function(optionIn, cb)
 		case 7: /*pay rent*/ this.play_pay_rent(turn); break;
 		case 8: /*pay tax*/ this.play_pay_tax(turn); break;
 		case 9: /*pick up chance/community chest card*/ this.play_pick_up_commchance(turn); break;
+		case 10: /*deal with chance/community chest card*/ this.play_commchance(turn); break;
 	}
 
 

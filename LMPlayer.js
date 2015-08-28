@@ -10,6 +10,7 @@ function LMPlayer(nameIn, idolIn)
 		this.position = 0;
 		this.idol = (idolIn==undefined)? 'dog' : idolIn;
 		this.cards = new Array();
+		this.collect_go = true;
 	};
 	this.construct(nameIn, idolIn);
 }
@@ -30,6 +31,21 @@ LMPlayer.prototype.buy = function(idIn, pIn)
 		'houses' : 0,
 		'hotels' : 0
 	}); 
+};
+
+LMPlayer.prototype.houses_hotels_count = function()
+{
+	var rv = {
+		houses : 0,
+		hotels : 0
+	};
+	var i = 0;
+	for(; i < this.properties.length; i++)
+	{
+		rv.houses += this.properties[i].houses;
+		rv.hotels += this.properties[i].hotels;
+	}
+	return rv;
 };
 
 //checks if the player owns a certain property (pass in the property id)

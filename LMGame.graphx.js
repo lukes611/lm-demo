@@ -20,22 +20,24 @@ LMGame.prototype.render = function()
 };
 
 //function to move a player (selected by player_index) xtimes forward, the players actual position is then changed and cb is called after
-LMGame.prototype.move_player = function(player_index,xtimes, cb)
+LMGame.prototype.move_player = function(player_index, xtimes, cb)
 {
-	var i = 0;
+	
 	if(xtimes == 0){ return; }
 	var th = this;
+	var incer = xtimes < 0 ? -1 : 1;
+	var i = 0;
 	th.move_player_single(player_index, function myCb()
 	{
-		i++;
-		if(i < xtimes)
+		i+=incer;
+		if(i != xtimes)
 		{
-			th.move_player_single(player_index, myCb);
+			th.move_player_single(player_index, myCb, undefined, incer);
 		}else
 		{
 			if(cb != undefined){cb();}
 		}
-	});
+	}, undefined, incer);
 };
 
 //play the roll the dice animation, then actually roll the dice to produce some random numbers
@@ -57,6 +59,7 @@ LMGame.prototype.roll_animation = function(cb)
 //animate a players (selected by playerId) monitary amount and add amount * scalar to it, cb is called after the function completes
 LMGame.prototype.money_change_animation = function(playerId, amount, scalar, cb)
 {
+	if(amount == 0) cb();
 	var player = this.players[playerId];
 	var len = Math.floor(amount / 10);
 	var dec_am = 10 * scalar;
@@ -84,6 +87,26 @@ LMGame.prototype.money_change_animation = function(playerId, amount, scalar, cb)
 };
 
 
+//animate the exchange of money from player1 to player2 and perform the actual exchange, cb is called after the function completes
+LMGame.prototype.money_player_exchange = function(player1, player2, amount, cb)
+{
+	var comp = [false, false];
+	var compf = function()
+	{
+		if(comp[0] && comp[1]) cb();
+	};
+	this.money_change_animation(player1, amount, -1, function()
+	{
+		comp[0] = true;
+		compf();
+	});
+	this.money_change_animation(player2, amount, 1, function()
+	{
+		comp[1] = true;
+		compf();
+	});
+};
+
 //function to clear the dice from the screen and make sure they are not drawn in the render loop
 LMGame.prototype.clear_dice = function()
 {
@@ -91,8 +114,19 @@ LMGame.prototype.clear_dice = function()
 	this.drawDice = false;
 };
 
-//moves a player by a single position, used by the move_player function
-LMGame.prototype.move_player_single = function(index, cb, speed)
+//moves a player by a single position either backwards or forwards, direction is either 1 or -1
+LMGame.prototype.move_player_single = function(index, cb, speed, direction)
+{
+	if(direction == undefined) //legacy
+	{
+		direction = 1;
+	}
+	if(direction==1) this.move_player_single_forwards(index, cb, speed);
+	else this.move_player_single_backwards(index, cb, speed);
+};
+
+//moves a player by a single position, used by the move_player function (forwards)
+LMGame.prototype.move_player_single_forwards = function(index, cb, speed)
 {
 	var ntimes = 10;
 	var nseconds = (speed == undefined) ? 300 : speed;
@@ -113,5 +147,42 @@ LMGame.prototype.move_player_single = function(index, cb, speed)
 	};
 	setTimeout(ftmp, nseconds / ntimes);
 };
+
+//moves a player by a single position, used by the move_player function (backwards)
+LMGame.prototype.move_player_single_backwards = function(index, cb, speed)
+{
+	var ntimes = 10;
+	var nseconds = (speed == undefined) ? 300 : speed;
+	var incer = 1 / ntimes;
+	var original = this.players[index].position;
+	var new_pos = original - 1;
+	new_pos = new_pos < 0 ? new_pos + th.graphx.boxes.length: new_pos;
+	var th = this;
+	console.log('new position: ' + new_pos);
+	var ftmp = function()
+	{
+		var np = original;
+		np -= incer;
+		np = np < 0 ? np + th.graphx.boxes.length : np;
+		if(np < 0) console.log('ouch!');
+		console.log(np);
+		original = np;
+		console.log('orig: ' + original);
+		//th.players[index].position = np;
+		var diff = Math.abs(original-new_pos);
+		if(diff < incer)
+		{
+			th.players[index].position = new_pos;
+			console.log('ending single back');
+			if(cb != undefined) { cb(); }
+		}else
+		{
+			setTimeout(ftmp, nseconds / ntimes);
+		}
+	};
+	setTimeout(ftmp, nseconds / ntimes);
+};
+
+
 
 

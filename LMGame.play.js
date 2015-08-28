@@ -400,12 +400,12 @@ LMGame.prototype.play_commchance = function(turn)
 {
 	var card = this.last_option.card;
 	
-	var _end_ = function()
+	var _end_ = function(param)
 	{
 		//place card back in deck
 		turn.me.gameData.cards.list.push(card);
 		//end turn
-		turn.me.finalize_turn_recall(turn, 4);
+		turn.me.finalize_turn_recall(turn, 4, param);
 	};
 	
 	//handle card consequences
@@ -463,7 +463,8 @@ LMGame.prototype.play_commchance = function(turn)
 		}
 	}else if(card.func[0] == 4) //get out of jail free card...
 	{
-		
+		turn.player.cards.push(card);
+		_end_('"Get out of jail" card kept');
 	}else if(card.func[0] == 5) //advance to nearest station
 	{
 		

@@ -48,23 +48,28 @@ LMGame.prototype.get_closest_property_type = function(current_position, type)
 	var best_dist = 0;
 	var index = -1;
 	var i = 0;
-	for(;i < this.map.list.length; i++)
+	for(;i < this.gameData.map.list.length; i++)
 	{
-		if(this.map.list[i].type == type && current_position != i)
+		if(this.gameData.map.list[i].type == 0 && current_position != i)
 		{
-			var property = this.properties_data(this.map.list[i].value);
-			var dist = this.get_closest_route_advance(current_position, i);
+			var property = this.properties_data(this.gameData.map.list[i].value);
 			if(property.type == type)
 			{
-				if(!set)
+				console.log(this.gameData.map.list[i].value);
+				console.log(this.gameData.map.list[i].name);
+				var dist = this.get_closest_route_advance(current_position, i);
+				if(property.type == type)
 				{
-					index = i;
-					best_dist = dist;
-					set = true;
-				}else if(dist < best_dist)
-				{
-					index = i;
-					best_dist = dist;
+					if(!set)
+					{
+						index = i;
+						best_dist = dist;
+						set = true;
+					}else if(dist < best_dist)
+					{
+						index = i;
+						best_dist = dist;
+					}
 				}
 			}
 		}

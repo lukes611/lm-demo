@@ -378,7 +378,7 @@ LMGame.prototype.play_pick_up_commchance = function(turn)
 	var i = 0;
 	for(; i < this.gameData.cards.list.length; i++)
 		if(this.gameData.cards.list[i].type == type) break;
-	var card = this.gameData.cards.list.splice(19,1)[0]; //retrieve the card (should be i as first param)
+	var card = this.gameData.cards.list.splice(27,1)[0]; //retrieve the card (should be i as first param)
 	var button_msg = 'collect,pay,advance,,keep card,advance,advance,go to jail'.split(',')[card.func[0]];
 	var ob_rv = {
 		type : 0,
@@ -464,9 +464,18 @@ LMGame.prototype.play_commchance = function(turn)
 	}else if(card.func[0] == 5) //advance to nearest station
 	{
 		//use get_closest_property_type function from LMGame.helper.js
+		var rv = this.get_closest_property_type(turn.player.position, 1);
+		this.move_player(turn.turn, rv.move_amount, function() //move to nearest station
+		{
+			//turn.me.finalize_turn_recall(turn, 2); replace this with either paying owner 2x amount or buying or nothing
+		});
 	}else if(card.func[0] == 6) //advance to nearest utility
 	{
-		
+		var rv = this.get_closest_property_type(turn.player.position, 2);
+		this.move_player(turn.turn, rv.move_amount, function() //move to nearest utility
+		{
+			//turn.me.finalize_turn_recall(turn, 2);
+		});
 	}else if(card.func[0] == 7) //go to jail
 	{
 		

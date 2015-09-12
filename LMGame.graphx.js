@@ -63,10 +63,10 @@ LMGame.prototype.money_change_animation = function(playerId, amount, scalar, cb)
 	var player = this.players[playerId];
 	var len = Math.floor(amount / 10);
 	var dec_am = 10 * scalar;
-	var new_amount = player.money - amount * scalar;
+	var new_amount = player.money + amount * scalar;
 	if(amount <= 50)
 	{
-		dec_am = 1 * scalar;
+		dec_am = scalar;
 		len = amount;
 	}
 	var i = 0;
@@ -75,14 +75,14 @@ LMGame.prototype.money_change_animation = function(playerId, amount, scalar, cb)
 		if(i < len)
 		{
 			player.money += dec_am;
+			i++;
 			setTimeout(reduce_money, 50);
 		}else
 		{
-			player.amount = new_amount;
+			player.money = new_amount;
 			cb();
 			return;
 		}
-		i++;
 	}, 50);
 };
 

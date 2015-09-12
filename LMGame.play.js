@@ -148,7 +148,43 @@ LMGame.prototype.play_post_move_options = function(turn)
 			if(turn.owner_index == this.playersTurn) //if they own it, goto end state
 			{
 				this.finalize_turn_recall(turn, 4, 'You landed on your own property.');
-			}else //they have to pay rent, goto rent paying state 7:
+			}else if(turn.property.type == 1) //if land on train station
+			{
+				var num_stations = turn.owner.number_of_stations_owned();
+				var amount = [turn.property.rent1h, turn.property.rent1h, turn.property.rent2h, turn.property.rent3h, turn.property.rent4h][num_stations];
+				var post_plural = (num_stations == 1) ? '' : 's';
+				var ob_rv = {
+					"type":0,
+					"desc":'you landed on: ' + turn.location.name + '. Which is owned by ' + turn.owner.name + '. ' + turn.owner.name + ' owns ' + num_stations + ' Station'+post_plural+', meaning you must pay $' + amount + '.',
+					'buttonList':new Array()
+				};
+				ob_rv.buttonList.push({
+						'name': 'pay rent ($' + amount + ')',
+						'id' : 0,
+						"buttonStyle":1
+					});
+				this.finalize_turn(turn, 7, ob_rv);
+				return;
+			}else if(turn.property.type == 2) //lands on a utility
+			{
+				var num_utilities = turn.owner.number_of_utilities_owned();
+				var amount = [turn.property.rent1h, turn.property.rent1h, turn.property.rent2h][num_utilities];
+				var post_plural = (num_utilities == 1) ? 'y' : 'ies';
+				var ob_rv = {
+					"type":0,
+					"desc":'you landed on: ' + turn.location.name + '. Which is owned by ' + turn.owner.name + '. ' + turn.owner.name + ' owns ' + num_utilities + ' Utilit'+post_plural+
+					', roll the dice and pay ' + amount + ' times the value rolled.',
+					'buttonList':new Array()
+				};
+				ob_rv.buttonList.push({
+						'name': 'roll',
+						'id' : 0,
+						"buttonStyle":1
+					});
+				turn.utility_rent_amount = amount;
+				this.finalize_turn(turn, 11, ob_rv);
+				return;
+			}else //they have to pay rent on a normal property, goto rent paying state 7:
 			{
 				var owns_set = turn.owner.owns_set(turn.property.set, turn.set_total);
 				var their_property = turn.owner.property_ob(turn.property.id);
@@ -157,7 +193,6 @@ LMGame.prototype.play_post_move_options = function(turn)
 					"desc":'you landed on: ' + turn.location.name + '. Which is owned by ' + turn.owner.name + '.',
 					'buttonList':new Array()
 				};
-				//make it so they pay for utilities too
 				if(!owns_set || their_property.houses == 0) //pay normal rate
 				{
 					ob_rv.buttonList.push({
@@ -350,24 +385,44 @@ LMGame.prototype.play_pay_rent = function(turn)
 {
 	if(turn.option == 0) //can pay and will pay rent
 	{
-		//find out how much is owed
-		var owns_set = turn.owner.owns_set(turn.property.set, turn.set_total);
-		var their_property = turn.owner.property_ob(turn.property.id);
-		var rent_owed = 0;
-		if(!owns_set || their_property.houses == 0) rent_owed = turn.property.rent;
-		else if(their_property.hotels >= 1) rent_owed = turn.property.renthotel;
-		else rent_owed = [
-			turn.property.rent1h,
-			turn.property.rent2h,
-			turn.property.rent3h,
-			turn.property.rent4h
-		][their_property.houses];
-		
-		//pay it
-		this.money_change_animation(this.playersTurn, rent_owed, -1, function()
+		if(turn.property.type == 0) //if type is normal property
 		{
-			turn.me.finalize_turn_recall(turn, 4, 'You payed the rent!');
-		});
+			//find out how much is owed
+			var owns_set = turn.owner.owns_set(turn.property.set, turn.set_total);
+			var their_property = turn.owner.property_ob(turn.property.id);
+			var rent_owed = 0;
+			if(!owns_set || their_property.houses == 0) rent_owed = turn.property.rent;
+			else if(their_property.hotels >= 1) rent_owed = turn.property.renthotel;
+			else rent_owed = [
+				turn.property.rent1h,
+				turn.property.rent2h,
+				turn.property.rent3h,
+				turn.property.rent4h
+			][their_property.houses];
+			
+			//pay it
+			this.money_change_animation(this.playersTurn, rent_owed, -1, function()
+			{
+				turn.me.finalize_turn_recall(turn, 4, 'You payed the rent!');
+			});
+		}else if(turn.property.type == 1) //if paying rent on a station
+		{
+			var num_stations = turn.owner.number_of_stations_owned();
+			var rent_owed = [turn.property.rent1h, turn.property.rent1h, turn.property.rent2h, turn.property.rent3h, turn.property.rent4h][num_stations];
+			//pay it
+			this.money_change_animation(this.playersTurn, rent_owed, -1, function()
+			{
+				turn.me.finalize_turn_recall(turn, 4, 'You payed the rent!');
+			});
+		}else if(turn.property.type == 2) //pay rent at utility
+		{
+			var rent_owed = this.last_turn.utility_rent_cost;
+			//pay it
+			this.money_change_animation(this.playersTurn, rent_owed, -1, function()
+			{
+				turn.me.finalize_turn_recall(turn, 4, 'You payed the rent!');
+			});
+		}
 	}
 };
 
@@ -484,6 +539,31 @@ LMGame.prototype.play_commchance = function(turn)
 	
 };
 
+//roll the dice and pay the rent
+LMGame.prototype.play_roll_pay_utility_rent = function(turn)
+{
+	this.roll_animation(function()
+	{
+		turn.me.dice.roll();
+		var dice_amount = turn.me.dice.total();
+		var scalar = turn.me.last_turn.utility_rent_amount;
+		var rent_owed = dice_amount * scalar;
+		var ob_rv = {
+			"type":0,
+			"desc":'you rolled ' + dice_amount + '. Pay ' + scalar + ' times that amount in rent.',
+			'buttonList':new Array()
+		};
+		ob_rv.buttonList.push({
+				'name': 'pay rent ($' + rent_owed + ')',
+				'id' : 0,
+				"buttonStyle":1
+			});
+		turn.utility_rent_cost = rent_owed;
+		turn.me.finalize_turn(turn, 7, ob_rv);
+		return;
+	});
+};
+
 LMGame.prototype.play = function(optionIn, cb)
 {
 	
@@ -521,6 +601,7 @@ LMGame.prototype.play = function(optionIn, cb)
 		case 8: /*pay tax*/ this.play_pay_tax(turn); break;
 		case 9: /*pick up chance/community chest card*/ this.play_pick_up_commchance(turn); break;
 		case 10: /*deal with chance/community chest card*/ this.play_commchance(turn); break;
+		case 11: /*roll the dice to pay either 4x or 10x the rolled amount*/ this.play_roll_pay_utility_rent(turn); break;
 	}
 
 

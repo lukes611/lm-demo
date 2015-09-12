@@ -157,6 +157,7 @@ LMGame.prototype.play_post_move_options = function(turn)
 					"desc":'you landed on: ' + turn.location.name + '. Which is owned by ' + turn.owner.name + '.',
 					'buttonList':new Array()
 				};
+				//make it so they pay for utilities too
 				if(!owns_set || their_property.houses == 0) //pay normal rate
 				{
 					ob_rv.buttonList.push({

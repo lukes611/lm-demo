@@ -80,5 +80,25 @@ LMPlayer.prototype.property_ob = function(id)
 	return undefined;
 };
 
+//count the number of Stations owned
+LMPlayer.prototype.number_of_stations_owned = function()
+{
+	var rv = 0, i = 0;
+	for(i = 0; i < this.properties.length; i++)
+	{
+		if(this.properties[i].type == 1) rv++;
+	}
+	return rv;
+};
 
+//count the number of Utilities owned
+LMPlayer.prototype.number_of_utilities_owned = function()
+{
+	var rv = 0, i = 0;
+	for(i = 0; i < this.properties.length; i++)
+	{
+		if(this.properties[i].type == 2) rv++;
+	}
+	return rv;
+};
 

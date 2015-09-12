@@ -519,6 +519,7 @@ LMGame.prototype.play_commchance = function(turn)
 		if(card.location < 0) this.move_player(turn.turn, card.location, function()
 		{
 			turn.me.finalize_turn_recall(turn, 2);
+			turn.me.gameData.cards.list.push(card);
 		});
 		else
 		{
@@ -526,12 +527,13 @@ LMGame.prototype.play_commchance = function(turn)
 			this.move_player(turn.turn, amount, function()
 			{
 				turn.me.finalize_turn_recall(turn, 2);
+				turn.me.gameData.cards.list.push(card);
 			});
 		}
 	}else if(card.func[0] == 4) //get out of jail free card...
 	{
 		turn.player.cards.push(card);
-		_end_('"Get out of jail free" card kept');
+		turn.me.finalize_turn_recall(turn, 4, '"Get out of jail free" card kept');
 	}else if(card.func[0] == 5) //advance to nearest station
 	{
 		//use get_closest_property_type function from LMGame.helper.js
@@ -539,6 +541,7 @@ LMGame.prototype.play_commchance = function(turn)
 		this.move_player(turn.turn, rv.move_amount, function() //move to nearest station
 		{
 			turn.double_the_rent = true;
+			turn.me.gameData.cards.list.push(card);
 			turn.me.finalize_turn_recall(turn, 2); //replace this with either paying owner 2x amount or buying or nothing
 			return;
 		});
@@ -548,6 +551,7 @@ LMGame.prototype.play_commchance = function(turn)
 		this.move_player(turn.turn, rv.move_amount, function() //move to nearest utility
 		{
 			turn.double_the_rent = true;
+			turn.me.gameData.cards.list.push(card);
 			turn.me.finalize_turn_recall(turn, 2);
 		});
 	}else if(card.func[0] == 7) //go to jail

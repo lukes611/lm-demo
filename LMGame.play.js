@@ -150,12 +150,20 @@ LMGame.prototype.play_post_move_options = function(turn)
 				this.finalize_turn_recall(turn, 4, 'You landed on your own property.');
 			}else if(turn.property.type == 1) //if land on train station
 			{
+				var double_the_rent = false;
+				var p_double = '';
+				if(this.last_turn.double_the_rent != undefined && this.last_turn.double_the_rent == true)
+				{
+					double_the_rent = true;
+					p_double = 'double twice the rent. Pay ';
+				}
 				var num_stations = turn.owner.number_of_stations_owned();
 				var amount = [turn.property.rent1h, turn.property.rent1h, turn.property.rent2h, turn.property.rent3h, turn.property.rent4h][num_stations];
+				amount = (double_the_rent) ? amount * 2 : amount;
 				var post_plural = (num_stations == 1) ? '' : 's';
 				var ob_rv = {
 					"type":0,
-					"desc":'you landed on: ' + turn.location.name + '. Which is owned by ' + turn.owner.name + '. ' + turn.owner.name + ' owns ' + num_stations + ' Station'+post_plural+', meaning you must pay $' + amount + '.',
+					"desc":'you landed on: ' + turn.location.name + '. Which is owned by ' + turn.owner.name + '. ' + turn.owner.name + ' owns ' + num_stations + ' Station'+post_plural+'. Pay '+p_double+'$' + amount + '.',
 					'buttonList':new Array()
 				};
 				ob_rv.buttonList.push({
@@ -163,17 +171,25 @@ LMGame.prototype.play_post_move_options = function(turn)
 						'id' : 0,
 						"buttonStyle":1
 					});
+				turn.station_rent_cost = amount;
 				this.finalize_turn(turn, 7, ob_rv);
 				return;
 			}else if(turn.property.type == 2) //lands on a utility
 			{
 				var num_utilities = turn.owner.number_of_utilities_owned();
-				var amount = [turn.property.rent1h, turn.property.rent1h, turn.property.rent2h][num_utilities];
 				var post_plural = (num_utilities == 1) ? 'y' : 'ies';
+				var amount = [turn.property.rent1h, turn.property.rent1h, turn.property.rent2h][num_utilities];
+				var description = 'you landed on: ' + turn.location.name + '. Which is owned by ' + turn.owner.name + '. ' + turn.owner.name + ' owns ' + num_utilities + ' Utilit'+post_plural+
+					', roll the dice and pay ' + amount + ' times the value rolled.';
+				if(this.last_turn.double_the_rent != undefined && this.last_turn.double_the_rent == true)
+				{
+					description = 'you landed on: ' + turn.location.name + '. Which is owned by ' + turn.owner.name + '. Pay ' + turn.owner.name + ' 10 times the amount rolled.';
+					amount = 10;
+				}
+				
 				var ob_rv = {
 					"type":0,
-					"desc":'you landed on: ' + turn.location.name + '. Which is owned by ' + turn.owner.name + '. ' + turn.owner.name + ' owns ' + num_utilities + ' Utilit'+post_plural+
-					', roll the dice and pay ' + amount + ' times the value rolled.',
+					"desc": description,
 					'buttonList':new Array()
 				};
 				ob_rv.buttonList.push({
@@ -407,8 +423,7 @@ LMGame.prototype.play_pay_rent = function(turn)
 			});
 		}else if(turn.property.type == 1) //if paying rent on a station
 		{
-			var num_stations = turn.owner.number_of_stations_owned();
-			var rent_owed = [turn.property.rent1h, turn.property.rent1h, turn.property.rent2h, turn.property.rent3h, turn.property.rent4h][num_stations];
+			var rent_owed = this.last_turn.station_rent_cost;
 			//pay it
 			this.money_change_animation(this.playersTurn, rent_owed, -1, function()
 			{
@@ -523,14 +538,17 @@ LMGame.prototype.play_commchance = function(turn)
 		var rv = this.get_closest_property_type(turn.player.position, 1);
 		this.move_player(turn.turn, rv.move_amount, function() //move to nearest station
 		{
-			//turn.me.finalize_turn_recall(turn, 2); replace this with either paying owner 2x amount or buying or nothing
+			turn.double_the_rent = true;
+			turn.me.finalize_turn_recall(turn, 2); //replace this with either paying owner 2x amount or buying or nothing
+			return;
 		});
 	}else if(card.func[0] == 6) //advance to nearest utility
 	{
 		var rv = this.get_closest_property_type(turn.player.position, 2);
 		this.move_player(turn.turn, rv.move_amount, function() //move to nearest utility
 		{
-			//turn.me.finalize_turn_recall(turn, 2);
+			turn.double_the_rent = true;
+			turn.me.finalize_turn_recall(turn, 2);
 		});
 	}else if(card.func[0] == 7) //go to jail
 	{

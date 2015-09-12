@@ -45,39 +45,32 @@ LMGame.prototype.get_closest_route = function(current_position, new_position)
 LMGame.prototype.get_closest_property_type = function(current_position, type)
 {
 	var set = false;
-	var best_dist = 0;
-	var index = -1;
-	var i = 0;
-	for(;i < this.gameData.map.list.length; i++)
+	var rv = {
+		location : -1,
+		move_amount : 0
+	};
+	var len = this.gameData.map.list.length;
+	var i = (current_position+1) % len;
+	var j = 0;
+	for(var j = 0;j < len; j++, i = (i+1)%len)
 	{
 		if(this.gameData.map.list[i].type == 0 && current_position != i)
 		{
 			var property = this.properties_data(this.gameData.map.list[i].value);
 			if(property.type == type)
 			{
-				console.log(this.gameData.map.list[i].value);
-				console.log(this.gameData.map.list[i].name);
-				var dist = this.get_closest_route_advance(current_position, i);
+				//console.log(this.gameData.map.list[i].value);
+				//console.log(this.gameData.map.list[i].name);
 				if(property.type == type)
 				{
-					if(!set)
-					{
-						index = i;
-						best_dist = dist;
-						set = true;
-					}else if(dist < best_dist)
-					{
-						index = i;
-						best_dist = dist;
-					}
+					rv.location = i;
+					rv.move_amount = j+1;
+					break;
 				}
 			}
 		}
 	}
-	return {
-		location : index,
-		move_amount : best_dist
-	};
+	return rv;
 };
 
 //returns the amount you should move (only positive) to get to a spot which is around yoy (either forwards x: returns x or backwards y: move back y spaces)

@@ -11,6 +11,8 @@ function LMPlayer(nameIn, idolIn)
 		this.idol = (idolIn==undefined)? 'dog' : idolIn;
 		this.cards = new Array();
 		this.collect_go = true;
+		this.turns_waited = 0;
+		this.in_jail = false;
 	};
 	this.construct(nameIn, idolIn);
 }

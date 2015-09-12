@@ -78,7 +78,7 @@ LMGame.prototype.get_closest_route_advance = function(current_position, new_posi
 {
 	if(current_position > new_position) //if new position is behind, check the distances fw && bw
 	{
-		return (39-current_position) + new_position;
+		return (40-current_position) + (new_position);
 	}
 	return new_position - current_position;
 };

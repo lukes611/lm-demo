@@ -23,17 +23,54 @@ LMGame.prototype.finalize_turn_recall = function(turn, newState, param)
 //gives the player their options at the beginning of their turn
 LMGame.prototype.play_begin = function(turn)
 {
-	this.finalize_turn(turn, 1, {
-		"type" : 0,
-		"buttonList" : [ 
-			{
-			"name": 'roll',
-			'id' : 0,
-			"buttonStyle": 1
-			}
-		],
-		"desc" : 'roll the dice...'
-	});
+	if(turn.player.in_jail)
+	{
+		if(turn.player.turns_waited >= 3)
+		{
+			turn.player.turns_waited = 0;
+			turn.player.in_jail = false;
+		}
+	}
+	if(!turn.player.in_jail)
+	{
+		this.finalize_turn(turn, 1, {
+			"type" : 0,
+			"buttonList" : [ 
+				{
+				"name": 'roll',
+				'id' : 0,
+				"buttonStyle": 1
+				}
+			],
+			"desc" : 'roll the dice...'
+		});
+	}else
+	{
+		var post_plural = (turn.player.turns_waited == 1) ? '' : 's';
+		var has_enough = turn.player.money >= 50;
+		var ob_rv = {
+			"type" : 0,
+			"buttonList" : [ 
+				{
+				"name": 'roll',
+				'id' : 0,
+				"buttonStyle": 1
+				}
+			],
+			"desc" : 'You are in Jail. You have waited ' + turn.player.turns_waited + ' time'+post_plural+'. Roll doubles for your chance to escape'
+		};
+		if(has_enough && turn.player.turns_waited < 2)
+		{
+			ob_rv.desc += ', or pay $50';
+			ob_rv.buttonList.push({
+				"name": 'pay $50',
+				'id' : 1,
+				"buttonStyle": 1
+			});
+		}
+		ob_rv.desc += '.';
+		this.finalize_turn(turn, 14, ob_rv);
+	}
 };
 
 //give the player their options at the end of their turn
@@ -269,6 +306,10 @@ LMGame.prototype.play_post_move_options = function(turn)
 			]
 		};
 		this.finalize_turn(turn, 9, ob_rv);
+	}else if(turn.location.type == 7) //go to jail
+	{
+		this.finalize_turn_recall(turn, 12); //send to jail
+		return;
 	}else //if land on non property (must implement more...)
 	{
 		this.finalize_turn_recall(turn, 4, 'Options for Tile: ' + turn.location.name + ' not yet implemented.');
@@ -449,7 +490,7 @@ LMGame.prototype.play_pick_up_commchance = function(turn)
 	var i = 0;
 	for(; i < this.gameData.cards.list.length; i++)
 		if(this.gameData.cards.list[i].type == type) break;
-	var card = this.gameData.cards.list.splice(27,1)[0]; //retrieve the card (should be i as first param)
+	var card = this.gameData.cards.list.splice(2,1)[0]; //retrieve the card (should be i as first param)
 	var button_msg = 'collect,pay,advance,,keep card,advance,advance,go to jail'.split(',')[card.func[0]];
 	var ob_rv = {
 		type : 0,
@@ -556,7 +597,7 @@ LMGame.prototype.play_commchance = function(turn)
 		});
 	}else if(card.func[0] == 7) //go to jail
 	{
-		
+		this.finalize_turn_recall(turn, 13);
 	}
 	
 };
@@ -584,6 +625,68 @@ LMGame.prototype.play_roll_pay_utility_rent = function(turn)
 		turn.me.finalize_turn(turn, 7, ob_rv);
 		return;
 	});
+};
+
+//send player to jail
+LMGame.prototype.play_send_to_jail = function(turn)
+{
+	var ob_rv = {
+		"type":0,
+		"desc":'Go Directly to Jail.',
+		"buttonList":new Array()
+	};
+	ob_rv.buttonList.push({
+		'name':'go to jail' ,
+		'id':0,
+		'buttonStyle':5
+	});
+	this.finalize_turn(turn, 13, ob_rv);
+};
+
+//move player to jail and set up next players turn
+LMGame.prototype.play_move_to_jail = function(turn)
+{
+	var move_amount = this.get_closest_route_advance(turn.player.position, 10);
+	this.move_player(turn.turn, move_amount, function()
+	{
+		turn.player.in_jail = true;
+		turn.me.finalize_turn_recall(turn, 4, turn.player.name + ' is now in Jail.');
+		return;
+	});
+};
+
+//deal with jail move:
+LMGame.prototype.play_pay_bail = function(turn)
+{
+	if(turn.option == 0) //roll your way out
+	{
+		this.roll_animation(function()
+		{
+			turn.me.dice.roll();
+			if(turn.me.dice.val1 == turn.me.dice.val2) //doubles
+			{
+				turn.player.turns_waited = 0;
+				turn.player.in_jail = false;
+				turn.me.finalize_turn_recall(turn, 4, 'You rolled a doubles! You are Free!');
+				return;
+			}else
+			{
+				turn.player.turns_waited++;
+				turn.me.finalize_turn_recall(turn, 4, 'No doubles sorry. Better luck next time.');
+				return;
+			}
+		});
+
+	}else //pay your way out
+	{
+		this.money_change_animation(turn.turn, 50, -1, function()
+		{
+			turn.player.turns_waited = 0;
+			turn.player.in_jail = false;
+			turn.me.finalize_turn_recall(turn, 4, 'You are Free!');
+		});
+	}
+	
 };
 
 LMGame.prototype.play = function(optionIn, cb)
@@ -624,6 +727,9 @@ LMGame.prototype.play = function(optionIn, cb)
 		case 9: /*pick up chance/community chest card*/ this.play_pick_up_commchance(turn); break;
 		case 10: /*deal with chance/community chest card*/ this.play_commchance(turn); break;
 		case 11: /*roll the dice to pay either 4x or 10x the rolled amount*/ this.play_roll_pay_utility_rent(turn); break;
+		case 12: /*send player off to jail*/ this.play_send_to_jail(turn); break;
+		case 13: /*send to jail part 2*/ this.play_move_to_jail(turn); break;
+		case 14: /*pay to get out of jail with roll or payment*/ this.play_pay_bail(turn); break;
 	}
 
 

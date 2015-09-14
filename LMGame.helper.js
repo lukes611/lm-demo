@@ -1,4 +1,40 @@
 
+LMGame.prototype.player_can_purchase_what_at = function(playerId, propId)
+{
+	var player = this.players[playerId];
+	var property = this.properties_data(propId);
+	var prop_ = player.property_ob(propId);
+	var rv = [];
+	if(prop_.hotels == 1) return rv;
+	if(prop_.houses == 4)
+	{
+		rv.push({
+			desc : 'Purchase 1 x hotel for $' + property.hotelCost,
+			cost : property.hotelCost
+		});
+		return rv;
+	}
+	var i = prop_.houses;
+	for(i = i + 1; i < 4; i++)
+	{
+		
+	}
+	return rv;
+};
+
+LMGame.prototype.properties_player_can_purchase = function(playerId)
+{
+	var rv = [];
+	var i = 0;
+	var player = this.players[playerId];
+	
+	for(; i < this.gameData.properties.list.length; i++)
+	{
+		if(player.owns(i) && player.owns_set(i, this.total_in_set(i)) && !player.property_ob(i).isMortgaged)
+			rv.push(i);
+	}
+	return i;
+};
 
 //finds the owner of a property by property id, returns -1 if unowned
 LMGame.prototype.find_owner = function(id)

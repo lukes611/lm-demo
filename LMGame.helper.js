@@ -1,5 +1,5 @@
 
-LMGame.prototype.player_can_purchase_what_at = function(playerId, propId)
+LMGame.prototype.player_purchase_options = function(playerId, propId)
 {
 	var player = this.players[playerId];
 	var property = this.properties_data(propId);
@@ -10,15 +10,28 @@ LMGame.prototype.player_can_purchase_what_at = function(playerId, propId)
 	{
 		rv.push({
 			desc : 'Purchase 1 x hotel for $' + property.hotelCost,
-			cost : property.hotelCost
+			cost : property.hotelCost,
+			new_num_houses : 0,
+			new_num_hotels : 1
 		});
 		return rv;
 	}
-	var i = prop_.houses;
-	for(i = i + 1; i < 4; i++)
+	for(i = 1; i <= 4-prop_.houses; i++)
 	{
-		
+		rv.push(
+		{
+			desc : 'Purchase ' + i + ' x houses for $' + (i * property.houseCost),
+			cost : property.houseCost*i,
+			new_num_houses : prop_.houses + i,
+			new_num_hotels : 0
+		});
 	}
+	rv.push({
+		desc : 'Purchase ' + (4-prop_.houses) + ' x houses and 1 hotel for $' + ((4-prop_.houses) * property.houseCost + property.hotelCost),
+		cost : ((4-prop_.houses) * property.houseCost + property.hotelCost),
+		new_num_houses : 0,
+		new_num_hotels : 1
+	});
 	return rv;
 };
 

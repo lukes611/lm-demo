@@ -13,6 +13,7 @@ function LMGame(canvasName, sizeIn, dataIn)
 	this.state = 0; //beginning state
 	this.last_option = undefined;
 	this.last_turn = undefined;
+	this.last_state = undefined;
 }
 
 //add a new player

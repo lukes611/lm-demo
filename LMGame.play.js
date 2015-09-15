@@ -2,6 +2,7 @@
 //finalizes the turn by setting the state to newState, and calling turn.cb(param)
 LMGame.prototype.finalize_turn = function(turn, newState, param)
 {
+	this.last_state = this.state;
 	if(newState != undefined)
 		this.state = newState;
 	this.last_option = param;
@@ -12,6 +13,7 @@ LMGame.prototype.finalize_turn = function(turn, newState, param)
 //performs the same action as finalize_turn, but with this.play(param, turn.cb) instead of turn.cb(param)
 LMGame.prototype.finalize_turn_recall = function(turn, newState, param)
 {
+	this.last_state = this.state;
 	if(newState != undefined)
 		this.state = newState;
 	this.last_option = param;
@@ -77,12 +79,17 @@ LMGame.prototype.play_begin = function(turn)
 LMGame.prototype.play_end = function(turn)
 {
 	var msg = (turn.option == undefined )? "end your turn, or complete another task." : turn.option + ' You may now end your turn or complete some other task.';
-	this.finalize_turn(turn, 5, {
+	this.finalize_turn(turn, 15, {
 		"type":0,
 		"buttonList":[{
 			'name': 'end turn',
 			'id' : 0,
 			"buttonStyle": 1
+		},
+		{
+			'name': 'purchase property',
+			'id' : 1,
+			"buttonStyle": 2
 		}],
 		"desc" : msg
 	});
@@ -689,6 +696,25 @@ LMGame.prototype.play_pay_bail = function(turn)
 	
 };
 
+LMGame.prototype.play_additional_options = function(turn)
+{
+	//if player clicked end turn, end it as per usual
+	if(turn.option == 0) this.finalize_turn_recall(turn, 5, turn.option);
+	var ob_rv = {
+		type:4,
+		desc : "Select a property: ",
+		buttonList : []
+	};
+	//ob_rv.buttonList = new Array({"name":'end bidding', "id":0,"buttonStyle":2});
+	var prop_ids = this.properties_player_can_purchase(turn.turn);
+	ob_rv.properties = [];
+	var i = 0;
+	for(; i < prop_ids.length; i++)
+		ob_rv.properties.push(this.properties_data(prop_ids[i]));
+	turn.state_recall = this.last_state;
+	this.finalize_turn(turn, 16, ob_rv);
+};
+
 LMGame.prototype.play = function(optionIn, cb)
 {
 	
@@ -730,6 +756,8 @@ LMGame.prototype.play = function(optionIn, cb)
 		case 12: /*send player off to jail*/ this.play_send_to_jail(turn); break;
 		case 13: /*send to jail part 2*/ this.play_move_to_jail(turn); break;
 		case 14: /*pay to get out of jail with roll or payment*/ this.play_pay_bail(turn); break;
+		case 15: /*other options... offer player additional
+		options such as purchasing property*/ this.play_additional_options(turn); break;
 	}
 
 

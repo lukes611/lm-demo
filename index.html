@@ -106,6 +106,7 @@ function play:
 <script src="LMGame.graphx.js"></script>
 <script src="LMGame.helper.js"></script>
 <script src="LMGame.play.js"></script>
+<div id="CoolCat">i am cool</div>
 <script>
 var game = undefined;
 
@@ -188,12 +189,109 @@ function add_auction_input(opt)
 	});
 }
 
+
+function add_in_table(id, arr_str, cols, enclose_in_div)
+{
+	enclose_in_div = (enclose_in_div == undefined) ? true : false;
+ 	var full_id = '#' + id;
+	var i, j;
+	var container = $('<div class="container-fluid"></div>');
+	var table = $('<table></table>');
+	var tbody = $('<tbody></tbody>');
+	var rv = [];
+	var original_length = arr_str.length;
+	//pad out
+	for(i = 0; i < (cols - original_length % cols); i++)
+	{
+		if(!enclose_in_div)
+			arr_str.push('<div><div>');
+		else arr_str.push('');
+	}
+	
+	for(i = 0; i < arr_str.length; i+=cols)
+	{
+		var tr = $('<tr></tr>');
+		for(j = i; j < i+cols; j++)
+		{
+			var td = $('<td style="padding:1px;"></td>');
+			var d = undefined;
+			if(enclose_in_div)
+				d = $('<div>' + arr_str[j] + '</div>');
+			else 
+				d = $(arr_str[j]);
+			td.append(d);
+			tr.append(td);
+			if(j < original_length) rv.push(d);
+		}
+		tbody.append(tr);
+	}
+	
+	//add others
+	container.append(table);
+	table.append(tbody);
+	//add container 
+	$(full_id).html('');
+	$(full_id).append(container);
+	return rv;
+}
+
+function add_property_select(opt)
+{
+
+	
+	var i = 0;
+	var div_list_str = [];
+	var div_list = undefined;
+	for(; i < opt.properties.length; i++)
+	{
+		var name = opt.properties[i].name;
+		var className = 'luke-card-drawing-outer';
+		var color = 'rgb('+opt.properties[i].r+','+opt.properties[i].g+','+opt.properties[i].b+')';
+		var drawing_div = '<div class="luke-card-outer"><div class="luke-card-inner" style="border-color:'+color+';"></div></div>';
+		var div_str = '<div class="'+className+'">'+drawing_div+name+'</div>';
+		div_list_str.push(div_str);
+	}
+	
+	
+	
+	div_list = add_in_table('game_player_options_list_content', div_list_str, 3, false);
+	
+	for(i = 0; i < div_list.length; i++)
+	{
+		(function(){
+			var d = div_list[i];		
+			d.mouseover(function()
+			{
+				d.css('border-color', 'red');
+			});
+			d.mouseout(function()
+			{
+				d.css('border-color', 'white');
+			});
+			
+			
+		})();
+	}
+	
+	//$('#game_player_options_list_content').append(cont);
+	//add the two buttons
+	var buttonStyles = 'btn-default,btn-primary,btn-success,btn-info,btn-warning,btn-danger'.split(',');
+	
+	for(i = 0; i < opt.buttonList.length; i++)
+	{
+		var b = $('<button class="luke-options-buttons btn '+buttonStyles[opt.buttonList[i].buttonStyle]+'">'+opt.buttonList[i].name+'</button>');
+		$('#game_player_options_list_content').append(b);
+	}
+	console.log('added buttons');
+}
+
 function game_process_options(options)
 {
 	$('#game_player_options_name').html(game.current_player().name + '\'s turn');
 	$('#game_player_options_list_description').html(options.desc);
 	if(options.type == 1) add_auction_input(options);
     if(options.buttonList != undefined && options.type == 0) add_buttons(options.buttonList);
+	if(options.type == 2) add_property_select(options);
 }
 
 function game_loop(input)
@@ -205,6 +303,8 @@ function game_loop(input)
 
 window.onload = function()
 {
+	//add_in_table('CoolCat', ['<div>cool</div>','<div>cant</div>','<div>stop</div>','<div>me</div>'], 3, false);
+
 	console.log('hi');
 	function update_player_stats(game)
 	{

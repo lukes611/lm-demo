@@ -43,10 +43,22 @@ LMGame.prototype.properties_player_can_purchase = function(playerId)
 	
 	for(; i < this.gameData.properties.list.length; i++)
 	{
-		if(player.owns(i) && player.owns_set(i, this.total_in_set(i)) && !player.property_ob(i).isMortgaged)
+		var property = this.properties_data(i);
+		//for debugging
+		//var p = this.properties_data(i);
+		//var nis = this.total_in_set(i);
+		//var ownz = player.owns(i);
+		/*if(ownz)
+		{
+			console.log('player: ' + player.name + ' owns ' + p.name);
+			console.log('num in set ' + nis + ' owns set?: ' + player.owns_set(p.set,nis));
+			
+		}*/
+		//end debugging
+		if(player.owns(i) && player.owns_set(property.set, this.total_in_set(i)))// && !player.property_ob(i).isMortgaged)
 			rv.push(i);
 	}
-	return i;
+	return rv;
 };
 
 //finds the owner of a property by property id, returns -1 if unowned

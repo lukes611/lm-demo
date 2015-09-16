@@ -701,14 +701,19 @@ LMGame.prototype.play_additional_options = function(turn)
 	//if player clicked end turn, end it as per usual
 	if(turn.option == 0) this.finalize_turn_recall(turn, 5, turn.option);
 	var ob_rv = {
-		type:4,
+		type:2,
 		desc : "Select a property: ",
-		buttonList : []
+		buttonList : [{
+			name : 'cancel',
+			id : 1,
+			buttonStyle : 5
+		}]
 	};
 	//ob_rv.buttonList = new Array({"name":'end bidding', "id":0,"buttonStyle":2});
 	var prop_ids = this.properties_player_can_purchase(turn.turn);
 	ob_rv.properties = [];
 	var i = 0;
+	console.log('can purchase ' +prop_ids.length);
 	for(; i < prop_ids.length; i++)
 		ob_rv.properties.push(this.properties_data(prop_ids[i]));
 	turn.state_recall = this.last_state;

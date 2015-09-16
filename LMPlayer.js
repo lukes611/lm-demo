@@ -66,7 +66,7 @@ LMPlayer.prototype.owns_set = function(set_id, total_in_set)
 	var count = 0, i =0;
 	for(; i < this.properties.length; i++)
 	{
-		if(this.properties[i].set == set_id)
+		if(this.properties[i].p.set == set_id)
 			count++;
 	}
 	return count >= total_in_set;

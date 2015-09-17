@@ -259,7 +259,8 @@ function add_property_select(opt)
 	for(i = 0; i < div_list.length; i++)
 	{
 		(function(){
-			var d = div_list[i];		
+			var d = div_list[i];
+			var sel_id = i;
 			d.mouseover(function()
 			{
 				d.css('border-color', 'red');
@@ -268,8 +269,13 @@ function add_property_select(opt)
 			{
 				d.css('border-color', 'white');
 			});
-			
-			
+			d.click(function()
+			{
+				game_loop({
+				option_id : 0,
+				selection : sel_id
+				});
+			});
 		})();
 	}
 	
@@ -281,8 +287,19 @@ function add_property_select(opt)
 	{
 		var b = $('<button class="luke-options-buttons btn '+buttonStyles[opt.buttonList[i].buttonStyle]+'">'+opt.buttonList[i].name+'</button>');
 		$('#game_player_options_list_content').append(b);
+		(function()
+		{
+			var button = b;
+			var ind = opt.buttonList[i].id;
+			button.click(function()
+			{
+				game_loop({
+				option_id : ind,
+				selection : -1
+				});
+			});
+		})();
 	}
-	console.log('added buttons');
 }
 
 function game_process_options(options)

@@ -9,28 +9,34 @@ LMGame.prototype.player_purchase_options = function(playerId, propId)
 	if(prop_.houses == 4)
 	{
 		rv.push({
-			desc : 'Purchase 1 x hotel for $' + property.hotelCost,
+			desc : '1 x hotel ($' + property.hotelCost + ')',
 			cost : property.hotelCost,
 			new_num_houses : 0,
-			new_num_hotels : 1
+			new_num_hotels : 1,
+			property_id : propId
 		});
 		return rv;
 	}
 	for(i = 1; i <= 4-prop_.houses; i++)
 	{
+		var plural_houses = (i==1) ? 'house' : 'houses';
 		rv.push(
 		{
-			desc : 'Purchase ' + i + ' x houses for $' + (i * property.houseCost),
+			desc : '' + i + ' x ' + plural_houses + ' ($' + (i * property.houseCost) + ')',
 			cost : property.houseCost*i,
 			new_num_houses : prop_.houses + i,
-			new_num_hotels : 0
+			new_num_hotels : 0,
+			property_id : propId
 		});
 	}
+	var rh = (4-prop_.houses); //required number of houses
+	var plural_houses_f = (rh==1) ? 'house' : 'houses';
 	rv.push({
-		desc : 'Purchase ' + (4-prop_.houses) + ' x houses and 1 hotel for $' + ((4-prop_.houses) * property.houseCost + property.hotelCost),
-		cost : ((4-prop_.houses) * property.houseCost + property.hotelCost),
+		desc : '' + rh + ' x houses + 1 x hotel ($' + (rh * property.houseCost + property.hotelCost) + ')',
+		cost : (rh * property.houseCost + property.hotelCost),
 		new_num_houses : 0,
-		new_num_hotels : 1
+		new_num_hotels : 1,
+		property_id : propId
 	});
 	return rv;
 };

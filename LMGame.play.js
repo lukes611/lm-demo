@@ -713,11 +713,79 @@ LMGame.prototype.play_additional_options = function(turn)
 	var prop_ids = this.properties_player_can_purchase(turn.turn);
 	ob_rv.properties = [];
 	var i = 0;
-	console.log('can purchase ' +prop_ids.length);
 	for(; i < prop_ids.length; i++)
 		ob_rv.properties.push(this.properties_data(prop_ids[i]));
 	turn.state_recall = this.last_state;
 	this.finalize_turn(turn, 16, ob_rv);
+};
+
+LMGame.prototype.play_property_select_for_house = function(turn)
+{
+	if(turn.option.option_id == 1)
+	{
+		this.finalize_turn_recall(turn, this.last_turn.state_recall);
+		return;
+	}else 
+	{
+		turn.state_recall = this.last_turn.state_recall;
+		var selected_id = turn.option.selection;
+		var property = this.last_option.properties[selected_id];
+		turn.purchase_options = this.player_purchase_options(turn.turn, property.id);
+		var ob_rv = {
+			type:0,
+			desc : "What would you like to buy ",
+			buttonList : []
+		};
+		var i = 0;
+		for(; i < turn.purchase_options.length; i++)
+			ob_rv.buttonList.push({
+				name : turn.purchase_options[i].desc,
+				id : i,
+				buttonStyle : 2
+			});
+		ob_rv.buttonList.push({
+			name : 'cancel',
+			id : -1,
+			buttonStyle : 5
+		});
+		this.finalize_turn(turn, 17, ob_rv);
+		//get the options they have... including cancelation of the current procedure
+		//go to next state which applies those options... or cancel
+	}
+};
+
+LMGame.prototype.play_buy_houses = function(turn)
+{
+	if(turn.option == -1)
+	{
+		this.finalize_turn_recall(turn,this.last_turn.state_recall);
+	}else
+	{
+		turn.state_recall = this.last_turn.state_recall;
+		turn.purchase_details = this.last_turn.purchase_options[turn.option];
+		var can_afford = turn.player.has_enough(turn.purchase_details.cost);
+		var msg = (can_afford)? 'Go ahead with the purchase?' : 'You can\'t afford this option.';
+		var other_button_msg = (can_afford)? 'no' : 'cancel';
+		var ob_rv = {
+			type:0,
+			desc : msg,
+			buttonList : []
+		};
+		if(can_afford)
+		{
+			ob_rv.buttonList.push({
+				id : 0,
+				name : 'yes',
+				buttonStyle : 2
+			});
+		}
+		ob_rv.buttonList.push({
+			id : 1,
+			name : other_button_msg,
+			buttonStyle : 5
+		});
+		this.finalize_turn(turn, 18, ob_rv);
+	}
 };
 
 LMGame.prototype.play = function(optionIn, cb)
@@ -763,6 +831,8 @@ LMGame.prototype.play = function(optionIn, cb)
 		case 14: /*pay to get out of jail with roll or payment*/ this.play_pay_bail(turn); break;
 		case 15: /*other options... offer player additional
 		options such as purchasing property*/ this.play_additional_options(turn); break;
+		case 16: /*handle post choosing property for house state*/ this.play_property_select_for_house(turn); break;
+		case 17: /*buy house*/ this.play_buy_houses(turn); break;
 	}
 
 

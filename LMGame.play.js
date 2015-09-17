@@ -22,7 +22,7 @@ LMGame.prototype.finalize_turn_recall = function(turn, newState, param)
 };
 
 
-//gives the player their options at the beginning of their turn
+//0: gives the player their options at the beginning of their turn
 LMGame.prototype.play_begin = function(turn)
 {
 	if(turn.player.in_jail)
@@ -35,7 +35,7 @@ LMGame.prototype.play_begin = function(turn)
 	}
 	if(!turn.player.in_jail)
 	{
-		this.finalize_turn(turn, 1, {
+		var ob_rv = {
 			"type" : 0,
 			"buttonList" : [ 
 				{
@@ -45,7 +45,9 @@ LMGame.prototype.play_begin = function(turn)
 				}
 			],
 			"desc" : 'roll the dice...'
-		});
+		};
+		this.finalize_turn(turn, 1, ob_rv);
+		return;
 	}else
 	{
 		var post_plural = (turn.player.turns_waited == 1) ? '' : 's';
@@ -72,6 +74,7 @@ LMGame.prototype.play_begin = function(turn)
 		}
 		ob_rv.desc += '.';
 		this.finalize_turn(turn, 14, ob_rv);
+		return;
 	}
 };
 
@@ -335,7 +338,7 @@ LMGame.prototype.play_pay_tax = function(turn)
 	});
 };
 
-//changes to next players turn, and re-calls play
+//5: changes to next players turn, and re-calls play
 LMGame.prototype.play_next_players_turn = function(turn)
 {
 	this.nextPlayer();
@@ -699,7 +702,11 @@ LMGame.prototype.play_pay_bail = function(turn)
 LMGame.prototype.play_additional_options = function(turn)
 {
 	//if player clicked end turn, end it as per usual
-	if(turn.option == 0) this.finalize_turn_recall(turn, 5, turn.option);
+	if(turn.option == 0)
+	{ 
+		this.finalize_turn_recall(turn, 5, turn.option);
+		return;
+	}
 	var ob_rv = {
 		type:2,
 		desc : "Select a property: ",
@@ -733,7 +740,7 @@ LMGame.prototype.play_property_select_for_house = function(turn)
 		turn.purchase_options = this.player_purchase_options(turn.turn, property.id);
 		var ob_rv = {
 			type:0,
-			desc : "What would you like to buy ",
+			desc : "What would you like to buy at " + property.name + '?',
 			buttonList : []
 		};
 		var i = 0;
@@ -759,13 +766,15 @@ LMGame.prototype.play_buy_houses = function(turn)
 	if(turn.option == -1)
 	{
 		this.finalize_turn_recall(turn,this.last_turn.state_recall);
+		return;
 	}else
 	{
 		turn.state_recall = this.last_turn.state_recall;
 		turn.purchase_details = this.last_turn.purchase_options[turn.option];
 		var can_afford = turn.player.has_enough(turn.purchase_details.cost);
-		var msg = (can_afford)? 'Go ahead with the purchase?' : 'You can\'t afford this option.';
-		var other_button_msg = (can_afford)? 'no' : 'cancel';
+		var property = this.properties_data(turn.purchase_details.property_id);
+		var msg = (can_afford)? 'Purchasing ' + turn.purchase_details.desc + ' at ' + property.name + '. Go ahead with the purchase?' : 'You can\'t afford this option.';
+		var other_button_msg = (can_afford)? 'no' : 'go back';
 		var ob_rv = {
 			type:0,
 			desc : msg,
@@ -786,6 +795,26 @@ LMGame.prototype.play_buy_houses = function(turn)
 		});
 		this.finalize_turn(turn, 18, ob_rv);
 	}
+};
+
+LMGame.prototype.play_post_house_purchase = function(turn)
+{
+	if(turn.option == 1)
+	{
+		this.finalize_turn_recall(turn,this.last_turn.state_recall);
+		return;
+	}
+	
+	//buy the house
+	var pd = this.last_turn.purchase_details;
+	this.money_change_animation(turn.turn, pd.cost, -1, function()
+	{
+		var prop = turn.player.property_ob(pd.property_id);
+		prop.houses = pd.new_num_houses;
+		prop.hotels = pd.new_num_hotels;
+		turn.me.finalize_turn_recall(turn, turn.me.last_turn.state_recall);
+	});
+	
 };
 
 LMGame.prototype.play = function(optionIn, cb)
@@ -833,6 +862,7 @@ LMGame.prototype.play = function(optionIn, cb)
 		options such as purchasing property*/ this.play_additional_options(turn); break;
 		case 16: /*handle post choosing property for house state*/ this.play_property_select_for_house(turn); break;
 		case 17: /*buy house*/ this.play_buy_houses(turn); break;
+		case 18: /*pose house purchase options*/ this.play_post_house_purchase(turn); break;
 	}
 
 

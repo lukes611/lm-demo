@@ -271,10 +271,14 @@ function add_property_select(opt)
 			});
 			d.click(function()
 			{
-				game_loop({
+				game.play({
 				option_id : 0,
 				selection : sel_id
+				}, function(options){ 
+				game_process_options(options);
 				});
+				
+				
 			});
 		})();
 	}
@@ -293,10 +297,13 @@ function add_property_select(opt)
 			var ind = opt.buttonList[i].id;
 			button.click(function()
 			{
-				game_loop({
+				game.play({
 				option_id : ind,
 				selection : -1
+				}, function(options){ 
+				game_process_options(options);
 				});
+				
 			});
 		})();
 	}

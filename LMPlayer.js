@@ -82,6 +82,41 @@ LMPlayer.prototype.property_ob = function(id)
 	return undefined;
 };
 
+//returns a list of property objects (from gamedata) which can be traded by this player
+LMPlayer.prototype.tradables = function()
+{
+	var i = 0;
+	var rv = [];
+	for(; i < this.properties.length; i++)
+	{
+		if(this.can_trade_property(i))
+			rv.push(this.properties[i].p);
+	}
+	return rv;
+};
+
+//can trade: [(if): 0-houses/hotels, owns it(not mortgaged), other sets they own do not have a house/hotel]
+LMPlayer.prototype.can_trade_property = function(player_properties_index)
+{
+	var i = 0, j = 0;
+	for(; i < this.properties.length; i++)
+	{
+		if(this.properties[i].isMortgaged==true) return false;
+		if(this.properties[i].houses > 0) return false;
+		if(this.properties[i].hotels > 0) return false;
+		var set = this.properties[i].p.set;
+		for(j = 0; j < this.properties.length; j++)
+		{
+			if(j != i)
+			{
+				if(this.properties[j].houses > 0) return false;
+				if(this.properties[j].hotels > 0) return false;
+			}
+		}
+	}
+	return true;
+};
+
 //count the number of Stations owned
 LMPlayer.prototype.number_of_stations_owned = function()
 {

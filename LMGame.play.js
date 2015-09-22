@@ -78,7 +78,7 @@ LMGame.prototype.play_begin = function(turn)
 	}
 };
 
-//give the player their options at the end of their turn
+//4: give the player their options at the end of their turn
 LMGame.prototype.play_end = function(turn)
 {
 	var msg = (turn.option == undefined )? "end your turn, or complete another task." : turn.option + ' You may now end your turn or complete some other task.';
@@ -93,6 +93,11 @@ LMGame.prototype.play_end = function(turn)
 			'name': 'purchase property',
 			'id' : 1,
 			"buttonStyle": 2
+		},
+		{
+			name : 'trade',
+			id : 2,
+			buttonStyle : 3
 		}],
 		"desc" : msg
 	});
@@ -699,6 +704,7 @@ LMGame.prototype.play_pay_bail = function(turn)
 	
 };
 
+//15: the player has selected to end their move, purchase property, trade...
 LMGame.prototype.play_additional_options = function(turn)
 {
 	//if player clicked end turn, end it as per usual
@@ -706,24 +712,50 @@ LMGame.prototype.play_additional_options = function(turn)
 	{ 
 		this.finalize_turn_recall(turn, 5, turn.option);
 		return;
+	}else if(turn.option == 1) //player wants to buy property
+	{
+		var ob_rv = {
+			type:2,
+			desc : "Select a property: ",
+			buttonList : [{
+				name : 'cancel',
+				id : 1,
+				buttonStyle : 5
+			}]
+		};
+		//ob_rv.buttonList = new Array({"name":'end bidding', "id":0,"buttonStyle":2});
+		var prop_ids = this.properties_player_can_purchase(turn.turn);
+		ob_rv.properties = [];
+		var i = 0;
+		for(; i < prop_ids.length; i++)
+			ob_rv.properties.push(this.properties_data(prop_ids[i]));
+		turn.state_recall = this.last_state;
+		this.finalize_turn(turn, 16, ob_rv);
+	
+	}else if(turn.option == 2) //player wants to trade (first select a player to trade with:
+	{
+		var ob_rv = {
+			type:0,
+			desc : "Select a player to trade with: ",
+			buttonList : [{
+				name : 'cancel',
+				id : -1,
+				buttonStyle : 5
+			}]
+		};
+		var i = 0;
+		var others = this.player_can_trade_with(turn.turn);
+		for(; i < others.length; i++)
+			ob_rv.buttonList.push(
+			{
+				name : others[i].name,
+				id : i,
+				buttonStyle : 3
+			});
+		turn.players_to_select = others;
+		this.finalize_turn(turn, 19, ob_rv);
+		return;
 	}
-	var ob_rv = {
-		type:2,
-		desc : "Select a property: ",
-		buttonList : [{
-			name : 'cancel',
-			id : 1,
-			buttonStyle : 5
-		}]
-	};
-	//ob_rv.buttonList = new Array({"name":'end bidding', "id":0,"buttonStyle":2});
-	var prop_ids = this.properties_player_can_purchase(turn.turn);
-	ob_rv.properties = [];
-	var i = 0;
-	for(; i < prop_ids.length; i++)
-		ob_rv.properties.push(this.properties_data(prop_ids[i]));
-	turn.state_recall = this.last_state;
-	this.finalize_turn(turn, 16, ob_rv);
 };
 
 LMGame.prototype.play_property_select_for_house = function(turn)

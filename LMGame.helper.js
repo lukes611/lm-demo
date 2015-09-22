@@ -1,4 +1,25 @@
 
+LMGame.prototype.player_trade_options = function(playerId)
+{
+	//get a list of properties, they own (which are not mortgaged)
+	//structure: just pass the properties data object back:
+	//cannot trade property unless: 0-houses/hotels, owns it(not mortgaged), other sets they own do not have a house/hotel:
+	return this.players[playerId].tradables();
+};
+
+//returs a list of players which a player can trade with
+LMGame.prototype.player_can_trade_with = function(playerId)
+{
+	var i = 0;
+	var rv = [];
+	for(; i < this.players.length; i++)
+	{
+		if(playerId != i)
+			rv.push(this.players[i]);
+	}
+	return rv;
+};
+
 LMGame.prototype.player_purchase_options = function(playerId, propId)
 {
 	var player = this.players[playerId];

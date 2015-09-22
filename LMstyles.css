@@ -80,4 +80,30 @@ body
 	margin-top:5%;
 }
 
+.luke-name-space
+{
+	width:100%;
+	height:auto;
+}
+
+.luke-name-space-sub
+{
+	margin-left:auto;
+	margin-right:auto;
+	text-align:center;
+}
+
+.luke-name-space-sub-im
+{
+	width:10%;
+	height:auto;
+	margin-left:auto;
+	margin-right:auto;
+}
+.luke-name-space-sub-im-im
+{
+	width:100%;
+	height:auto;
+}
+
 

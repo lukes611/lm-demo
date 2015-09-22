@@ -743,6 +743,7 @@ LMGame.prototype.play_additional_options = function(turn)
 				buttonStyle : 5
 			}]
 		};
+		turn.state_recall = this.last_state;
 		var i = 0;
 		var others = this.player_can_trade_with(turn.turn);
 		for(; i < others.length; i++)
@@ -758,6 +759,38 @@ LMGame.prototype.play_additional_options = function(turn)
 	}
 };
 
+//player selected to trade with:
+LMGame.prototype.select_tradables_1 = function(turn)
+{
+	if(turn.option == -1)
+	{
+		this.finalize_turn_recall(turn, this.last_turn.state_recall);
+		return;
+	}else
+	{
+		turn.player_to_trade_with = this.last_turn.players_to_select[turn.option];
+		var ob_rv = {
+			type:4,
+			desc : "Select your items you wish to trade to "+turn.player_to_trade_with.name+": ",
+			buttonList : [{
+				name : 'trade',
+				id : 0,
+				buttonStyle : 2
+			}
+			,{
+				name : 'cancel',
+				id : 1,
+				buttonStyle : 5
+			}]
+		};
+		ob_rv.state_recall = this.last_turn.state_recall;
+		ob_rv.tradables = this.player_trade_options(turn.turn);
+		turn.trablebles1 = ob_rv.trablebles;
+		this.finalize_turn(turn, 20, ob_rv);
+	}
+};
+
+//16: select property where to buy house
 LMGame.prototype.play_property_select_for_house = function(turn)
 {
 	if(turn.option.option_id == 1)
@@ -894,7 +927,8 @@ LMGame.prototype.play = function(optionIn, cb)
 		options such as purchasing property*/ this.play_additional_options(turn); break;
 		case 16: /*handle post choosing property for house state*/ this.play_property_select_for_house(turn); break;
 		case 17: /*buy house*/ this.play_buy_houses(turn); break;
-		case 18: /*pose house purchase options*/ this.play_post_house_purchase(turn); break;
+		case 18: /*post house purchase options*/ this.play_post_house_purchase(turn); break;
+		case 19: /*select things to trade*/ this.select_tradables_1(turn); break;
 	}
 
 

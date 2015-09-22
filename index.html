@@ -309,6 +309,61 @@ function add_property_select(opt)
 	}
 }
 
+function add_trade_select(opt)
+{
+	var i;
+	var out_div = $('#game_player_options_list_content');
+	var buttonStyles = 'btn-default,btn-primary,btn-success,btn-info,btn-warning,btn-danger'.split(',');
+	
+	var selected_list = new Array(opt.tradables.length);
+	for(i = 0; i < selected_list.length; i++) selected_list[i] = false;
+	
+	var list_of_selectables = [];
+	for(i = 0; i < opt.tradables.length; i++)
+	{
+		var name = opt.tradables[i].name;
+		var className = 'luke-card-drawing-outer';
+		var tick = $('<div class="luke-name-space-sub-im"><img class="luke-name-space-sub-im-im" src="ims/tick.png"></img></div>');
+		var name_space = $('<div class="luke-name-space"></div>');
+		name_space.append($('<div class="luke-name-space-sub">'+name+'</div>'));
+		tick.css('display','none');
+		name_space.append(tick);
+		var color = 'rgb('+opt.tradables[i].r+','+opt.tradables[i].g+','+opt.tradables[i].b+')';
+		var drawing_div = '<div class="luke-card-outer"><div class="luke-card-inner" style="border-color:'+color+';"></div></div>';
+		var div_str = '<div class="'+className+'">'+drawing_div+'</div>';
+		var new_div = $(div_str);
+		new_div.append(name_space);
+		(function()
+		{
+			var my_tick = tick;
+			var d = new_div;
+			var my_i = i;
+			d.mouseover(function()
+			{
+				d.css('border-color', 'red');
+			});
+			d.mouseout(function()
+			{
+				d.css('border-color', 'white');
+			});
+			d.click(function()
+			{
+				selected_list[my_i] = !selected_list[my_i];
+				if(selected_list[my_i])
+					my_tick.css('display','block');
+				else
+					my_tick.css('display','none');
+			});
+		})();
+		list_of_selectables.push(new_div);
+	}
+	
+	add_in_table('game_player_options_list_content', list_of_selectables, 3, false);
+	
+	for(i = 0; i < opt.buttonList.length; i++)
+		out_div.append($('<button type="button" class="luke-options-buttons btn '+buttonStyles[opt.buttonList[i].buttonStyle]+'" onclick="game_loop('+opt.buttonList[i].id+');"> '+opt.buttonList[i].name+' </button>'));
+}
+
 function game_process_options(options)
 {
 	$('#game_player_options_name').html(game.current_player().name + '\'s turn');
@@ -316,6 +371,7 @@ function game_process_options(options)
 	if(options.type == 1) add_auction_input(options);
     if(options.buttonList != undefined && options.type == 0) add_buttons(options.buttonList);
 	if(options.type == 2) add_property_select(options);
+	if(options.type == 4) add_trade_select(options);
 }
 
 function game_loop(input)
